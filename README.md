@@ -555,3 +555,196 @@ Show[ListPlot3D[
 </p>
 
 #### Application to Simple River Systems
+
+Simple river systems may present challenges to the flood plain analysis: rural landscapes may erroneously increase the complexity the mapping process, providing wrong measurements of rainfall and flooding elevation. These problems may cause the prediction to be inaccurate, hence our motivation to apply the code generally to all locations through better cleaning algorithms. Note that we added the parameter cityDimensions to make the plot ranging inclusive of all points in the 20 by 20 mile area.
+
+Let's explore an example in Jackson, Mississippi, using the measurements taken from dominantColorsCity, canonicalColorValueMap, cleanupRules, cityColorCoverage, cityWeightedByColor, permeability, intensity, intensityCalibrated, acres, peakRunoff, totalRiverIncrease:
+
+```Mathematica
+In[254]:= jacksonGeo = 
+ GeoGraphics[
+  GeoBoundingBox[
+   Entity["City", {"Anchorage", "Alaska", "UnitedStates"}]], 
+  GeoBackground -> "VectorMinimal", GeoRange -> Quantity[20, "Miles"],
+   GeoRangePadding -> None]; jacksonDominantColorsCity = 
+ DominantColors[jacksonGeo, 10];
+jacksonCanonicalColorValueMap = {RGBColor[
+    0.9485373223930705, 0.9487508349546278, 0.9489485072522973, 1.] ->
+     0.8, RGBColor[
+    0.6313832857283339, 0.7646670368551112, 0.498099288620747, 1.] -> 
+    0.25, RGBColor[
+    0.9997462475099389, 0.8507363495836935, 0.3998398617073094, 1.] ->
+     0.85, RGBColor[
+    0.9993720538256167, 0.7492570006072168, 0.003109412403643569, 
+     1.] -> 0.65, 
+   RGBColor[
+    0.2960132375888991, 0.2960131125158366, 0.2960131444661215, 1.] ->
+     0.8, RGBColor[
+    0.6000193760698551, 0.8071089170241192, 0.998613272437677, 1.] -> 
+    0.01, RGBColor[
+    0.09982824341023538, 0.3304382676154282, 0.6514924833695483, 
+     1.] -> 0.01, 
+   RGBColor[
+    0.6540282036622517, 0.6540488377301875, 0.6540691378617204, 1.] ->
+     0.75};
+jacksonCleanupRules = 
+  MapThread[
+   Rule, {Flatten@
+     Nearest[Keys@jacksonCanonicalColorValueMap, 
+      jacksonDominantColorsCity], jacksonDominantColorsCity}];
+jacksonCityValueMap = 
+  jacksonCanonicalColorValueMap /. jacksonCleanupRules;
+jacksonCityColorCoverage = 
+  DominantColors[jacksonGeo, 10, {"Color", "Coverage"}];
+Transpose[jacksonCityColorCoverage /. jacksonCityValueMap];
+jacksonCityWeightedByColor = 
+  WeightedData @@ 
+   Transpose[jacksonCityColorCoverage /. jacksonCityValueMap];
+
+jacksonPermeability = Mean[jacksonCityWeightedByColor];
+
+jacksonIntensity = 
+  Mean[WeatherData[
+     Entity["City", {"Anchorage", "Alaska", "UnitedStates"}], 
+     "TotalPrecipitation", {{2000, 1, 1}, {2022, 12, 31}, "Year"}]]/
+   2.54;
+
+jacksonIntensityCalibrated = 
+  Which[0 < jacksonIntensity < 5, 4.1 , 5 < jacksonIntensity < 10, 
+   4.2 , 10 < jacksonIntensity < 15, 4.3 , 15 < jacksonIntensity < 20,
+    4.4, 20 < jacksonIntensity < 25, 4.5 , 25 < jacksonIntensity < 30,
+    4.6 , 130 < jacksonIntensity < 35, 4.7 , 
+   35 < jacksonIntensity < 40, 4.8 , 40 < jacksonIntensity < 45, 4.9 ,
+    45 < jacksonIntensity < 50, 5.0 , 50 < jacksonIntensity < 55, 
+   5.1 , 55 < jacksonIntensity < 60, 5.2 , 60 < jacksonIntensity < 65,
+    5.3 , 65 < jacksonIntensity < 70, 5.4 , 
+   70 < jacksonIntensity < 75, 5.5 , 75 < jacksonIntensity < 80, 
+   5.6 , 80 < jacksonIntensity < 85, 5.7 , 85 < jacksonIntensity < 90,
+    5.8 , 90 < jacksonIntensity < 95, 5.9 , 
+   95 < jacksonIntensity < 100, 6.0];
+
+
+jacksonAcres = 20^2*640;
+
+jacksonPeakRunoff = 
+  jacksonPermeability*jacksonIntensityCalibrated *jacksonAcres;
+
+jacksonTotalRiverIncrease = (jacksonPeakRunoff/
+     Part[Part[#, 2] & /@ 
+       Select[DominantColors[
+         GeoGraphics[
+          GeoBoundingBox[
+           Entity["City", {"Anchorage", "Alaska", "UnitedStates"}]], 
+          GeoBackground -> "VectorMinimal", 
+          GeoRange -> Quantity[20, "Miles"], GeoRangePadding -> None],
+          5, {"Color", "Coverage"}], 
+        ColorDistance[RGBColor[
+           0.5998694708331431, 0.8076220271551392, 0.9996520209699861,
+             1.], #[[1]]] < 0.1 &], 1])/11151360000*3600*200
+
+Out[266]= 152.786
+```
+In the jacksonGeo model, we simulated 152.786 feet of heavy rainfall over 200 hours in Jackson, Mississippi. Then, we evaluated the ReliefPlot and ListPlot3D using the peakRunoff data and we were able to determine using the rational method (Q = CiA). We now plot the Relief and 3D Models.
+<p align = "center" >
+ <img width="455" height = "455" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/0b5166bc-f7db-42e4-9e0b-c09cfdcbc04b">
+<img width="466" height = "455" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/2450a1e6-b0c5-43f7-bbbd-57b5bcedffe4">
+</p>
+
+#### Application to Complex River Systems 
+Complex river systems may present challenges to the flood plain analysis: urban landscapes have varying ranges of elevation, diverse river tributaries, and sporadic weather. These problems may cause the prediction to be inaccurate, hence our motivation to apply the code generally to all locations through better cleaning algorithms. Note that we added the parameter cityDimensions to make the plot ranging inclusive of all points in the 20 by 20 mile area.
+
+```Mathematica
+In[272]:= anchorageGeo = 
+ GeoGraphics[
+  GeoBoundingBox[
+   Entity["City", {"Anchorage", "Alaska", "UnitedStates"}]], 
+  GeoBackground -> "VectorMinimal", GeoRange -> Quantity[20, "Miles"],
+   GeoRangePadding -> None]; anchorageDominantColorsCity = 
+ DominantColors[anchorageGeo, 10];
+anchorageCanonicalColorValueMap = {RGBColor[
+    0.9485373223930705, 0.9487508349546278, 0.9489485072522973, 1.] ->
+     0.8, RGBColor[
+    0.6313832857283339, 0.7646670368551112, 0.498099288620747, 1.] -> 
+    0.25, RGBColor[
+    0.9997462475099389, 0.8507363495836935, 0.3998398617073094, 1.] ->
+     0.85, RGBColor[
+    0.9993720538256167, 0.7492570006072168, 0.003109412403643569, 
+     1.] -> 0.65, 
+   RGBColor[
+    0.2960132375888991, 0.2960131125158366, 0.2960131444661215, 1.] ->
+     0.8, RGBColor[
+    0.6000193760698551, 0.8071089170241192, 0.998613272437677, 1.] -> 
+    0.01, RGBColor[
+    0.09982824341023538, 0.3304382676154282, 0.6514924833695483, 
+     1.] -> 0.01, 
+   RGBColor[
+    0.6540282036622517, 0.6540488377301875, 0.6540691378617204, 1.] ->
+     0.75};
+anchorageCleanupRules = 
+  MapThread[
+   Rule, {Flatten@
+     Nearest[Keys@anchorageCanonicalColorValueMap, 
+      anchorageDominantColorsCity], anchorageDominantColorsCity}];
+anchorageCityValueMap = 
+  anchorageCanonicalColorValueMap /. anchorageCleanupRules;
+anchorageCityColorCoverage = 
+  DominantColors[anchorageGeo, 10, {"Color", "Coverage"}];
+Transpose[anchorageCityColorCoverage /. anchorageCityValueMap];
+anchorageCityWeightedByColor = 
+  WeightedData @@ 
+   Transpose[anchorageCityColorCoverage /. anchorageCityValueMap];
+
+anchoragePermeability = Mean[anchorageCityWeightedByColor];
+
+anchorageIntensity = 
+  Mean[WeatherData[
+     Entity["City", {"Anchorage", "Alaska", "UnitedStates"}], 
+     "TotalPrecipitation", {{2000, 1, 1}, {2022, 12, 31}, "Year"}]]/
+   2.54;
+
+anchorageIntensityCalibrated = 
+  Which[0 < anchorageIntensity < 5, 4.1 , 5 < anchorageIntensity < 10,
+    4.2 , 10 < anchorageIntensity < 15, 4.3 , 
+   15 < anchorageIntensity < 20, 4.4, 20 < anchorageIntensity < 25, 
+   4.5 , 25 < anchorageIntensity < 30, 4.6 , 
+   130 < anchorageIntensity < 35, 4.7 , 35 < anchorageIntensity < 40, 
+   4.8 , 40 < anchorageIntensity < 45, 4.9 , 
+   45 < anchorageIntensity < 50, 5.0 , 50 < anchorageIntensity < 55, 
+   5.1 , 55 < anchorageIntensity < 60, 5.2 , 
+   60 < anchorageIntensity < 65, 5.3 , 65 < anchorageIntensity < 70, 
+   5.4 , 70 < anchorageIntensity < 75, 5.5 , 
+   75 < anchorageIntensity < 80, 5.6 , 80 < anchorageIntensity < 85, 
+   5.7 , 85 < anchorageIntensity < 90, 5.8 , 
+   90 < anchorageIntensity < 95, 5.9 , 95 < anchorageIntensity < 100, 
+   6.0];
+
+
+anchorageAcres = 20^2*640;
+
+anchoragePeakRunoff = 
+  anchoragePermeability*anchorageIntensityCalibrated *anchorageAcres;
+
+anchorageTotalRiverIncrease = (anchoragePeakRunoff/
+     Part[Part[#, 2] & /@ 
+       Select[DominantColors[
+         GeoGraphics[
+          GeoBoundingBox[
+           Entity["City", {"Anchorage", "Alaska", "UnitedStates"}]], 
+          GeoBackground -> "VectorMinimal", 
+          GeoRange -> Quantity[20, "Miles"], GeoRangePadding -> None],
+          5, {"Color", "Coverage"}], 
+        ColorDistance[RGBColor[
+           0.5998694708331431, 0.8076220271551392, 0.9996520209699861,
+             1.], #[[1]]] < 0.1 &], 1])/11151360000*3600*2000
+
+Out[284]= 1527.86
+```
+In the anchorageGeo model, we simulated 1527.86 feet of heavy rainfall over 2000 hours in Anchorage, Alaska. Then, we evaluated the ReliefPlot and ListPlot3D using the peakRunoff data we were able to determine using the rational method (Q = CiA). We now plot the Relief and 3D models.
+
+<p align = "center" >
+
+<img width="469" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/b0b7cad3-c196-404d-9f04-7305f1d9ec26">
+<img width="465" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ac99c6e8-b978-4e0d-8110-b603e912029e">
+
+</p>
+
