@@ -236,7 +236,6 @@ threeDFullFunction[{"Jackson", "Mississippi", "UnitedStates"}]
 <p align = "center"> 
 <img width="260" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/8bcb5552-ecc8-4bd4-be13-aaddc437382d">
 <img width="260" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/873fdd03-8279-4027-9bcf-23401b2f4601">
-<img width="260" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a3657913-9d16-4c6c-9c9c-992bbe89396b">
 </p>
 
 
