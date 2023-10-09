@@ -243,11 +243,128 @@ threeDFullFunction[{"Jackson", "Mississippi", "UnitedStates"}]
 
 Application of this code to more complex river systems may present even more challenges. Tributaries may be uncounted, large bodies of water may be presented as a single tributary, and tree graphs may be inaccurate. Note that this example was created in a pure anonymous function for the purpose that this code can be applied to other locations.
 
+
+
 ```Mathematica 
 mapView[{x9_, y9_, z9_}] := 
   GeoGraphics[GeoBoundingBox[Entity["City", {x9, y9, z9}]], 
    GeoBackground -> "VectorMinimal"];
+mapView[{"Anchorage", "Alaska", "UnitedStates"}]
 ```
 <p align = "center"> 
-<img width="420" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/4aaa582a-f8af-4edd-9b80-38ff6aa12c7f">
+<img width="420" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/93eefe56-7115-435a-b4b4-1de568ec2d2f">
 </p>
+
+Then, we'll apply Binarize through the polygonBinarization function to polygonComponents to prepare it for cleaning:
+```Mathematica
+polygonBinarization[{x11_, y11_, z11_}] := ColorNegate[
+  Binarize[
+   Graphics[
+    Flatten[Cases[
+      GeoGraphics[GeoBoundingBox[Entity["City", {x11, y11, z11}]], 
+       GeoBackground -> "VectorMinimal"], 
+      water : {Directive[{___, 
+           RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___} :> 
+       water[[2]], Infinity]]]]]
+polygonBinarization[{"Anchorage", "Alaska", "UnitedStates"}]
+```
+After, we'll apply Dilation, DeleteSmallComponents, and Thinning through the polygonCleaning function to clean all unconnected, small components:
+```Mathematica
+polygonCleaning[{x12_, y12_, z12_}] := Thinning[
+  DeleteSmallComponents[
+   Dilation[
+    ColorNegate[
+     Binarize[
+      Graphics[
+       Flatten[Cases[
+         GeoGraphics[GeoBoundingBox[Entity["City", {x12, y12, z12}]], 
+          GeoBackground -> "VectorMinimal"], 
+         water : {Directive[{___, 
+              RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___} :> 
+          water[[2]], Infinity]]]]], 3]]]
+polygonCleaning[{"Anchorage", "Alaska", "UnitedStates"}]
+```
+<p align = "center"> 
+ <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/261ddf84-5b52-4cef-8384-cff79cb4174b">
+ <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/53e149bf-5829-45ef-a5dc-4485f30dc5b2">
+</p>
+
+<p align = "center" > We'll turn the image into a morphological graph </p>
+
+```Mathematica
+threeDFullFunction[{x13_, y13_, z13_}] :=
+ Graph3D[
+  MorphologicalGraph[
+   Thinning[
+    DeleteSmallComponents[
+     Dilation[
+      ColorNegate[
+       Binarize[
+        Graphics[
+         Flatten[Cases[
+           GeoGraphics[
+            GeoBoundingBox[Entity["City", {x13, y13, z13}]], 
+            GeoBackground -> "VectorMinimal"], 
+           water : {Directive[{___, 
+                RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___} :> 
+            water[[2]], Infinity]]]]], 3]]]]]
+
+threeDFullFunction[{"Anchorage", "Alaska", "UnitedStates"}]
+```
+
+<p align = "center" > <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/3be603b2-554e-4177-b17e-a1c53ed9c51f">
+ <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/cfa661fc-67a3-413b-a34c-6184d6fdfc38">
+</p>
+<p align = "center" > Acyclic and Cyclic Morphological Graphs </p>
+
+
+### 2-D Satellite Mapping onto 3-D Model 
+
+The first step of this section is to find a way to take satellite imagery of a geographic location using GeoImage; afterwards, we will extract the river basin using imaging processing (using Color Matching once more) and layer both the satellite image and the river (using ImageCompose) to create a texture that could be mapped onto ListPlot3D to create a chunk of the specified geographic location. Let's see an example in Juneau, Alaska, we name it satelliteImage:
+
+```Mathematica
+satelliteImage = 
+ GeoImage[Entity["City", {"Juneau", "Alaska", "UnitedStates"}], 
+  GeoRange -> Quantity[10, "Miles"]]
+```
+<p align = "center" > <img width="436" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/91c49b2d-5eb3-4b52-9199-1963284861c0"> </p>
+
+Afterwards, we can extract the river information from a street map through GeoImage. Then, we can clean the data using ColorNegate, Binarize, and ImageRecolor. ColorNegate and Binarize makes its so that only the river component of satelliteImage is present. ImageRecolor recolors the black (from ColorNegate) into a more desirable blue color for the river. StreeMapNoLabels takes away the labels from the street map to foster a more fluid  transition from map to river image.
+
+```Mathematica
+riverImage = 
+ ImageRecolor[
+  Binarize[
+   ColorNegate[
+    GeoImage[Entity["City", {"Juneau", "Alaska", "UnitedStates"}], 
+     "StreetMapNoLabels", 
+     GeoRange -> Quantity[10, "Miles"]]]], {White -> 
+    RGBColor[0, 0, Rational[2, 3], 0.5], 
+   Black -> RGBColor[0.5, 0.5, 0.5, 0]}]
+```
+<p align = "center" > <img width="443" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/dd2fa0f0-cd3e-4086-9e52-367dcba9a34c"> </p>
+Then, we will overlay satelliteImage and riverImage through the ImageCompose function.
+
+```Mathematica 
+fullSatelliteImage = ImageCompose[satelliteImage, riverImage]
+```
+
+<p align = "center" > <img width="438" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/70a2f72d-4220-40fd-ae20-205e8e5f8d53">
+ </p>
+
+Finally, we can set the overlay as a texture scope and create a ListPlot3D for the entire satellite image. 
+
+```Mathematica
+
+ListPlot3D[
+ GeoElevationData[
+  Entity["City", {"Juneau", "Alaska", "UnitedStates"}], 
+  GeoRange -> Quantity[10, "Miles"]], MeshFunctions -> {#3 &}, 
+ PlotRange -> All, 
+ PlotStyle -> Texture[ImageRotate[fullSatelliteImage, 3 Pi/2]], 
+ Filling -> Bottom, FillingStyle -> Opacity[1], ImageSize -> 1000]
+```
+<p align = "center " > <img width="466" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a4f02f2f-073b-416d-83bf-bf5f90290c1c"> </p>
+
+
+
