@@ -1,4 +1,4 @@
-# WaterGate
+<img width="250" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/9ab0fb33-29c0-4ab1-aa45-5488a665acb3"># WaterGate
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
 ## Abstract
@@ -367,5 +367,188 @@ ListPlot3D[
 ```
 <p align = "center " > <img width="466" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a4f02f2f-073b-416d-83bf-bf5f90290c1c"> </p>
 
+### Relief Plot for Flood Plain
 
+A relief plot can be especially helpful to model the flood plain of a particular area. We can apply the function MinMax to find the range of the manipulate, ColorReplace to fill in the "flooded" space with RGBColor[0.6, 0.807843137254902, 1.0]  and Dynamic@ to synchronously reflect the changes made.
+
+```Mathematica
+Manipulate[ReliefPlot[juneauData, PlotRange -> {rainfall, ma}], 
+  {rainfall, -1434.796150587988, 6732.8241303211125}, 
+  SynchronousUpdating -> True, SynchronousInitialization -> True, 
+  LocalizeVariables -> False]
+```
+
+<p align = "center"> <img src = "https://github.com/navvye/WaterGate/assets/25653940/98a35812-d4f9-487a-8e63-0392b0458870" /> </p>
+
+We can set the overlay as a texture scope and create a ListPlot3D for the entire relief plot. 
+
+```Mathematica
+ListPlot3D[
+ GeoElevationData[
+  Entity["City", {"Juneau", "Alaska", "UnitedStates"}], 
+  GeoRange -> Quantity[10, "Miles"]], MeshFunctions -> {#3 &}, 
+ PlotRange -> All, PlotStyle -> Texture[juneauReliefTrue], 
+ Filling -> Bottom, FillingStyle -> Opacity[1], ImageSize -> 1250]
+```
+<p align = "center" > <img width="367" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/956a7bf0-fdf9-4a97-bf8b-e42bdda479a8"></p>
+
+
+### Rational Method (Q = CiA) Introduction and Usage
+
+The rational method  is used for determining peak discharges; this method is traditionally used to size storm sewers, channels, and other stormwater structures.
+
+The rational method formula is expressed as Q = CiA where: Q = Peak rate of runoff in cubic feet per second; C = Runoff coefficient, an empirical coefficient representing a relationship between rainfall and runoff; i = Average intensity of rainfall in inches per hour for the time of concentration for a selected frequency of occurrence or return period; A = The watershed area in acre. In this section, we will be calculating each of these variables and parameterizing them for any geographic location. 
+#### C Calculation
+As C is the runoff coefficient, we conducted a weighted average for all the colors present in the map with their coefficients taken from this table:
+
+<img width="520" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/e4c03bb1-de0b-4e28-bf10-22cf802476fa">
+
+As colors from different regions may differ, we have to build an algorithm that converts the closest color to the colors in our key. Using Nearest and ReplaceAll we are able to associate the correct colors with the correct weights. Afterwards we can see the color coverage of all the regions in the map using "Color" and "Coverage" as the option for the DominantColors function and apply the weight to get our final C value.
+
+```Mathematica
+juneauGeo = 
+ GeoGraphics[
+  GeoBoundingBox[
+   Entity["City", {"Juneau", "Alaska", "UnitedStates"}]], 
+  GeoBackground -> "VectorMinimal", GeoRange -> Quantity[20, "Miles"],
+   GeoRangePadding -> None]; juneauDominantColorsCity = 
+ DominantColors[juneauGeo, 5];
+juneauCanonicalColorValueMap = {RGBColor[
+    0.9485373223930705, 0.9487508349546278, 0.9489485072522973, 1.] ->
+     0.8, RGBColor[
+    0.6313832857283339, 0.7646670368551112, 0.498099288620747, 1.] -> 
+    0.25, RGBColor[
+    0.9997462475099389, 0.8507363495836935, 0.3998398617073094, 1.] ->
+     0.85, RGBColor[
+    0.9993720538256167, 0.7492570006072168, 0.003109412403643569, 
+     1.] -> 0.65, 
+   RGBColor[
+    0.2960132375888991, 0.2960131125158366, 0.2960131444661215, 1.] ->
+     0.8, RGBColor[
+    0.6000193760698551, 0.8071089170241192, 0.998613272437677, 1.] -> 
+    0.01, RGBColor[
+    0.09982824341023538, 0.3304382676154282, 0.6514924833695483, 
+     1.] -> 0.01, 
+   RGBColor[
+    0.6540282036622517, 0.6540488377301875, 0.6540691378617204, 1.] ->
+     0.75};
+juneauCleanupRules = 
+  MapThread[
+   Rule, {Flatten@
+     Nearest[Keys@juneauCanonicalColorValueMap, 
+      juneauDominantColorsCity], juneauDominantColorsCity}];
+juneauCityValueMap = 
+  juneauCanonicalColorValueMap /. juneauCleanupRules;
+juneauCityColorCoverage = 
+  DominantColors[juneauGeo, 5, {"Color", "Coverage"}];
+Transpose[juneauCityColorCoverage /. juneauCityValueMap];
+juneauCityWeightedByColor = 
+  WeightedData @@ 
+   Transpose[juneauCityColorCoverage /. juneauCityValueMap];
+
+juneauPermeability = Mean[juneauCityWeightedByColor]
+
+```
+Which gives us C = 0.633755
+
+#### I Calculation
+
+I is the intensity of the rainfall. Previous literature found that the intensity of rainfall for flash floods is usually around 4-6 inches; by taking the rainfall data using WeatherData for the past 20+ years, we are able to find an average annual rainfall measured in centimeters (which we converted to inches by dividing by 2.54). Next we mapped the intensity of rainfall (if it were to flood) and set it proportional to how high the annual rainfall is using a Which function.
+
+```Mathematica
+
+juneauIntensity = 
+  Mean[WeatherData[
+     Entity["City", {"Juneau", "Alaska", "UnitedStates"}], 
+     "TotalPrecipitation", {{2000, 1, 1}, {2022, 12, 31}, "Year"}]]/
+   2.54;
+
+juneauIntensityCalibrated = 
+ Which[0 < juneauIntensity < 5, 4.1 , 5 < juneauIntensity < 10, 4.2 , 
+  10 < juneauIntensity < 15, 4.3 , 15 < juneauIntensity < 20, 4.4, 
+  20 < juneauIntensity < 25, 4.5 , 25 < juneauIntensity < 30, 4.6 , 
+  130 < juneauIntensity < 35, 4.7 , 35 < juneauIntensity < 40, 4.8 , 
+  40 < juneauIntensity < 45, 4.9 , 45 < juneauIntensity < 50, 5.0 , 
+  50 < juneauIntensity < 55, 5.1 , 55 < juneauIntensity < 60, 5.2 , 
+  60 < juneauIntensity < 65, 5.3 , 65 < juneauIntensity < 70, 5.4 , 
+  70 < juneauIntensity < 75, 5.5 , 75 < juneauIntensity < 80, 5.6 , 
+  80 < juneauIntensity < 85, 5.7 , 85 < juneauIntensity < 90, 5.8 , 
+  90 < juneauIntensity < 95, 5.9 , 95 < juneauIntensity < 100, 6.0]
+```
+Which gives us I = 4.9
+
+#### A Calculation
+
+A is the area of the flood plain in acres; current data was in miles. To convert miles to acres, we have to square the region boundaries (the return result will be in square miles), then multiply by 640.
+```Mathematica
+juneauAcres = 20^2*640
+```
+Which gives us A = 256000
+
+#### CiA (Q Calculation) & River Runoff Calculation
+
+```Mathematica
+In[247]:= juneauPeakRunoff = 
+ juneauPermeability*juneauIntensityCalibrated*juneauAcres
+
+Q = 794982.
+```
+Now, we want to multiply the peakRunoff calculation (Q) by the inverse to model the factor in which the river will increase with respect to time. Then, we'll convert 400 square mile to 11,151,360,000 square feet and multiply  3600 to convert seconds to hours (the original measurement of Q is cubic feet/second). This measurement will give us the units measurement of feet/hour, in which we can manipulate the amount of hours the flood occurs to give the totalRiverIncrease.
+
+```Mathematica
+juneauTotalRiverIncrease = 
+ riverRunoffCalculator[{"Juneau", "Alaska", "UnitedStates"}, 750]
+riverRunoffCalculator[{x_, y_, z_}, h_] :=
+ (juneauPeakRunoff/
+     Part[Part[#, 2] & /@ 
+       Select[DominantColors[
+         GeoGraphics[GeoBoundingBox[Entity["City", {x, y, z}]], 
+          GeoBackground -> "VectorMinimal", 
+          GeoRange -> Quantity[20, "Miles"], GeoRangePadding -> None],
+          5, {"Color", "Coverage"}], 
+        ColorDistance[RGBColor[
+           0.5998694708331431, 0.8076220271551392, 0.9996520209699861,
+             1.], #[[1]]] < 0.1 &], 1])/11151360000*3600*h
+```
+1422.29 => Elevation increase is 1422.29 feet increase if it rained for 750 hours straight in Juneau, Alaska
+
+### Relief Calculation Integration and Flood Analysis 
+
+Taking our previous ReliefPlot techniques, here is the plot for Juneau for the environment specifications, named juneauElevation:
+
+```Mathematica
+juneauElevation = 
+  GeoElevationData[
+   Entity["City", {"Juneau", "Alaska", "UnitedStates"}], 
+   GeoRange -> Quantity[20, "Miles"], GeoProjection -> Automatic, 
+   UnitSystem -> "Imperial"];
+{mi, ma} = QuantityMagnitude[MinMax[juneauElevation]];
+juneauLevelPlot = 
+ ColorReplace[
+  ReliefPlot[juneauElevation, 
+   PlotRange -> {mi + juneauTotalRiverIncrease, ma}], 
+  White -> 
+   Directive[RGBColor[0.6, 0.807843137254902`, 1.], Opacity[0.2]]]
+
+```
+<p align = "center"> 
+<img width="250" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/3262c545-bc53-48ab-9803-064fe6b0346e">
+</p>
+
+We can then map both the alaskaElevation relief plot and use the totalRiverIncrease data to create a 3D flood plain using ListPlot3D. We used the function Show to overlay the flood plain with the created ListPlot3D of Juneau, Alaska; the first argument created the terrain and the second argument created the rising flood plain with respect to the totalRiverIncrease. Then, we added some minor formatting to the plot (Filling, FillingStyle, PlotStyle) for visualization purposes.
+
+
+```Mathematica
+Show[ListPlot3D[
+  GeoElevationData[
+   Entity["City", {"Juneau", "Alaska", "UnitedStates"}], 
+   GeoRange -> Quantity[20, "Miles"]], MeshFunctions -> {#3 &}, 
+  PlotRange -> All, PlotStyle -> Texture[juneauLevelPlot], 
+  Filling -> Bottom, FillingStyle -> Opacity[1], ImageSize -> 1250], 
+ Plot3D[{mi, mi + juneauTotalRiverIncrease}, {x, 0, 800}, {y, 0, 425},
+   PlotStyle -> Opacity[0.5, RGBColor[0.6, 0.807843137254902`, 1.]], 
+  Filling -> Bottom, FillingStyle -> Opacity[0.5]]]
+```
+<p align = "center"> <img width="494" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/088c38c0-c169-43fa-9cc8-ebaa6bdefc9c">
+</p>
 
