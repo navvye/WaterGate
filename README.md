@@ -1,4 +1,4 @@
-<img width="250" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/9ab0fb33-29c0-4ab1-aa45-5488a665acb3"># WaterGate
+# WaterGate
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
 ## Abstract
