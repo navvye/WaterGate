@@ -743,8 +743,112 @@ In the anchorageGeo model, we simulated 1527.86 feet of heavy rainfall over 2000
 
 <p align = "center" >
 
-<img width="469" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/b0b7cad3-c196-404d-9f04-7305f1d9ec26">
-<img width="465" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ac99c6e8-b978-4e0d-8110-b603e912029e">
+<img width="469" height = "469" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/b0b7cad3-c196-404d-9f04-7305f1d9ec26">
+<img width="465"  height = "469" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ac99c6e8-b978-4e0d-8110-b603e912029e">
 
 </p>
+
+
+### Tying Everything Together
+
+Just for fun, here is a model that ties together both aspects of our project.
+
+```Mathematica
+parisData = 
+ GeoElevationData[Entity["City", {"Paris", "IleDeFrance", "France"}], 
+  GeoRange -> Quantity[20, "Miles"], GeoProjection -> Automatic, 
+  UnitSystem -> "Imperial"]
+
+QuantityArray[{642, 640}, < Feet >]
+
+```
+![image](https://github.com/navvye/WaterGate/assets/25653940/ff212ded-d972-48c8-b1ae-c370bbcc9e49)
+```Mathematica
+In[37]:= {mi, ma} = QuantityMagnitude[MinMax[parisData]]
+
+Out[37]= {43.2489, 719.016}
+```
+
+We create the Paris Relief Plot
+
+```Mathematica
+parisLevelPlot = 
+ ColorReplace[
+  ReliefPlot[parisData, PlotRange -> {mi + parisRiverIncrease, ma}], 
+  White -> 
+   Directive[RGBColor[0.6, 0.807843137254902`, 1.], Opacity[0.2]]]
+```
+
+<p align = "center" >
+ <img width="467" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/e91fe0e1-1fd7-4900-877a-dab1dad1c193">
+
+</p>
+
+Now, we map the dimensions of Paris and print a Flood Plot
+``Mathematica 
+
+parisCityDimensions = 
+ Dimensions[
+  GeoElevationData[Entity["City", {"Paris", "IleDeFrance", "France"}],
+    GeoRange -> Quantity[20, "Miles"]]]
+    
+parisFloodPlot = 
+ Show[ListPlot3D[
+   GeoElevationData[
+    Entity["City", {"Paris", "IleDeFrance", "France"}], 
+    GeoRange -> Quantity[20, "Miles"]], MeshFunctions -> {#3 &}, 
+   PlotRange -> All, PlotStyle -> Texture[parisLevelPlot], 
+   Filling -> Bottom, FillingStyle -> Opacity[1], ImageSize -> 1250, 
+   Boxed -> False]]
+    ```
+
+ <p align = "center" >
+  <img width="481" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/2878790f-7b80-4369-8d25-d383bdf10a94">
+
+ </p>
+
+ We create morphological graphs using our previous functionality 
+
+ ```Mathematica
+parisGraph = 
+ Graph3D[MorphologicalGraph[
+   Thinning[
+    DeleteSmallComponents[
+     Dilation[
+      ColorNegate[
+       Binarize[
+        Graphics[
+         Flatten[Cases[
+           GeoGraphics[
+            GeoBoundingBox[
+             Entity["City", {"Paris", "IleDeFrance", "France"}]], 
+            GeoBackground -> "VectorMinimal"], 
+           water : {Directive[{___, 
+                RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___} :> 
+            water[[2]], Infinity]]]]], 3]]]]]
+```
+<img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/52bdc63e-ee5e-4170-a4ef-4a863be0691d">
+
+```Mathematica
+elevationBoundingBox = 
+ GeoBoundingBox[Entity["City", {"Paris", "IleDeFrance", "France"}]] //
+   GeoBounds
+
+{{48.86, 48.86}, {2.34, 2.34}}
+```
+Now, we map the vertices of the map onto the vertices we got using the elevation bounding box, and overlay on top of the
+
+```Mathematica
+parisElevated = 
+ Graph3D[EdgeList[parisGraph], 
+  VertexCoordinates -> 
+   Rescale[Map[{#[[1]], #[[2]]} &, 
+     VertexCoordinates /. 
+      AbsoluteOptions[parisGraph, 
+       VertexCoordinates]], {elevationBoundingBox[[1, 1]], 
+     elevationBoundingBox[[2, 1]]}, {elevationBoundingBox[[1, 2]], 
+     elevationBoundingBox[[2, 2]]}]]
+```
+<p align = "center"> <img width="779" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/c0459c66-56e0-47e4-9174-69d798dbfd11"> </p>
+
 
