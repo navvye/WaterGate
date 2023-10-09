@@ -287,6 +287,7 @@ polygonCleaning[{"Anchorage", "Alaska", "UnitedStates"}]
 <p align = "center"> 
  <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/261ddf84-5b52-4cef-8384-cff79cb4174b">
  <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/53e149bf-5829-45ef-a5dc-4485f30dc5b2">
+ <img width="260" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a3657913-9d16-4c6c-9c9c-992bbe89396b">
 </p>
 
 <p align = "center" > We'll turn the image into a morphological graph </p>
