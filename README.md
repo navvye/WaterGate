@@ -180,7 +180,7 @@ A massive Wolfram-Languagey function that compiles everything into one (Function
 <img width="576" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/cce7887d-c103-45a3-8b50-3e9d856c26b9">
 </p>
 
-### Application to Simple River Systems
+#### Application to Simple River Systems
 
 Application of this code to simple river systems can present us with overlooked overcomplexity. Tributaries may be over counted, small bodies of water may be presented as a multiple tributaries. But overall, the code works perfectly fine when applied to simple river systems. 
 
@@ -240,7 +240,7 @@ threeDFullFunction[{"Jackson", "Mississippi", "UnitedStates"}]
 </p>
 
 
-### Application to Complex River Systems
+#### Application to Complex River Systems
 
 Application of this code to more complex river systems may present even more challenges. Tributaries may be uncounted, large bodies of water may be presented as a single tributary, and tree graphs may be inaccurate. Note that this example was created in a pure anonymous function for the purpose that this code can be applied to other locations.
 
@@ -552,3 +552,4 @@ Show[ListPlot3D[
 <p align = "center"> <img width="494" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/088c38c0-c169-43fa-9cc8-ebaa6bdefc9c">
 </p>
 
+#### Application to Simple River Systems
