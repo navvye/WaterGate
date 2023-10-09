@@ -401,7 +401,7 @@ The rational method formula is expressed as Q = CiA where: Q = Peak rate of runo
 #### C Calculation
 As C is the runoff coefficient, we conducted a weighted average for all the colors present in the map with their coefficients taken from this table:
 
-<img width="520" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/e4c03bb1-de0b-4e28-bf10-22cf802476fa">
+<p align = "center" ><img width="520" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/e4c03bb1-de0b-4e28-bf10-22cf802476fa"> </p>
 
 As colors from different regions may differ, we have to build an algorithm that converts the closest color to the colors in our key. Using Nearest and ReplaceAll we are able to associate the correct colors with the correct weights. Afterwards we can see the color coverage of all the regions in the map using "Color" and "Coverage" as the option for the DominantColors function and apply the weight to get our final C value.
 
