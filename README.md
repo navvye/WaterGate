@@ -3,6 +3,7 @@
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
 # Table of Contents 
+<!--ts-->
 - [WaterGate](#watergate)
   * [Abstract](#abstract)
   * [Documentation](#documentation)
@@ -23,6 +24,8 @@ Welcome to the WaterGate documentation! WaterGate is an accessible computational
       - [Application to Simple River Systems](#application-to-simple-river-systems-1)
       - [Application to Complex River Systems](#application-to-complex-river-systems-1)
     + [Tying Everything Together](#tying-everything-together)
+   
+    <!--te-->
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
