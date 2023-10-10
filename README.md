@@ -1,4 +1,4 @@
-[[_TOC_]] 
+[_TOC_]
 
 # WaterGate
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
