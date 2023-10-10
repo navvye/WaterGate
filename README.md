@@ -856,7 +856,7 @@ parisGraph =
                 RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___} :> 
             water[[2]], Infinity]]]]], 3]]]]]
 ```
-<img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/52bdc63e-ee5e-4170-a4ef-4a863be0691d">
+<p align = "center" > <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/52bdc63e-ee5e-4170-a4ef-4a863be0691d"> </p>
 
 ```Mathematica
 elevationBoundingBox = 
