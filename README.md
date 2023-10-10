@@ -1,15 +1,32 @@
-[_TOC_]
+<!--ts-->
+   * [Installation](#Watergate)
+   * [Usage](#D)
+      * [STDIN](#stdin)
+      * [Local files](#local-files)
+      * [Remote files](#remote-files)
+      * [Multiple files](#multiple-files)
+      * [Combo](#combo)
+      * [Auto insert and update TOC](#auto-insert-and-update-toc)
+      * [GitHub token](#github-token)
+      * [TOC generation with Github Actions](#toc-generation-with-github-actions)
+   * [Tests](#tests)
+   * [Dependency](#dependency)
+   * [Docker](#docker)
+     * [Local](#local)
+     * [Public](#public)
+<!--te-->
+
 
 # WaterGate
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
-## Abstract
+# Abstract
 240 million people are affected by floods each year, reflecting the urgent need for accessible flood prediction and detection. WaterGate is a computational model that uses geographic elevation data and the rational method to predict flooding patterns , generating an interactive 3D model for user accessibility. Computational hydrology applies numerical methods, machine learning algorithms, and computational simulations to understand, predict, and manage water resources - including floods. Our project employs computational hydrology by analyzing the structure of river tributaries in 2D through polygon clustering, satellite imaging, and various cleaning protocols. We developed respective tributary tree graphs, morphological graphs, and nodes to create a comprehensive tree and 3D model. Afterward, we examine the morphology of flood plains in 3D space, implementing the rational method (Q = C iA) framework with curated relief plots to predict, model, and visualize flooding elevation. Then, we constructed our stream order analysis, waterline delineation, and statistical analysis to validate our data. Lastly, we modeled different river systems and developed further extensions to increase the applicability of WaterGate to communities around the world.
 
-## Documentation 
+# Documentation 
 This will not be a traditional documentation - rather, it will focus on the code that we've written and how you can implement it if you code in the Wolfram Language
 
-### Isolating Rivers from Maps 
+## Isolating Rivers from Maps 
 This first step of this section is to find a way to isolate rivers from a Map; we can do this through polygon clusters and color recognition. VectorMinimal allows us to convert individual components on the map into manipulable polygons. GeoBoundingBox gives the coordinates of the bounding rectangle enclosing the extracted polygon. GeoGraphics simply gives the map of all said polygons in the region. 
 
 ```Mathematica
@@ -58,7 +75,7 @@ parisOutline =
 <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/89d4651c-1546-4023-8f92-82cd9235e53d">
 </p>
 
-### Creating Morphological Graphs and Tree Graphs
+## Creating Morphological Graphs and Tree Graphs
 
 We can apply MorphologicalGraph to parisOutline to give an undirected graph that represents the connectivity of the morphological branch points and endpoint
 ```Mathematica
@@ -73,7 +90,7 @@ There are a few major flaws in the parisMorphologicalGraph, however. To overcome
 <img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/8be115a4-ba0b-4c41-8dbb-b1ba9a4c7389">
 </p>
 
-### Finding Stream Splits on Morphological Graphs
+## Finding Stream Splits on Morphological Graphs
 
 Finding stream splits through morphological graphs can easily be done using MorphologicalBranchPoints and various data cleaning mechanism. First, we extract the river polygons (this time using pattern matching as it reduces the time complexity); next we Binarize the image and subject it to ColorNegate to turn the river white and the background black. Afterwards, we apply the Dilation function to connect all the river polygons together and use the function DeleteSmallComponents to remove extraneous water sources.  We apply Thinning to return the river to the original size before using the function MorphologicalBranchPoints to point out the pixels that form river splits. Lastly, we dilate the points and make them into circles using Dilatation (once more) and DiskMatrix
 
@@ -119,7 +136,7 @@ layoverImage = ImageCompose[riverParis, branchPoints]
 River Marne with and without branchpoints
 </p>
 
-### Mapping River Branches on Maps
+## Mapping River Branches on Maps
 
 Although the process for evaluating polygons on maps is known, extracting the polygons across a multitude of different maps (with different coloring schemes) is not trivial. Therefore, we first define variables that extract raw data from the map and stores them for them to be manipulated later. We used the functions Nearest and ColorReplace to make the association from the river's blue to our desired blue. 
 
@@ -182,7 +199,7 @@ A massive Wolfram-Languagey function that compiles everything into one (Function
 <img width="576" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/cce7887d-c103-45a3-8b50-3e9d856c26b9">
 </p>
 
-#### Application to Simple River Systems
+## Application to Simple River Systems
 
 Application of this code to simple river systems can present us with overlooked overcomplexity. Tributaries may be over counted, small bodies of water may be presented as a multiple tributaries. But overall, the code works perfectly fine when applied to simple river systems. 
 
@@ -241,7 +258,7 @@ threeDFullFunction[{"Jackson", "Mississippi", "UnitedStates"}]
 </p>
 
 
-#### Application to Complex River Systems
+## Application to Complex River Systems
 
 Application of this code to more complex river systems may present even more challenges. Tributaries may be uncounted, large bodies of water may be presented as a single tributary, and tree graphs may be inaccurate. Note that this example was created in a pure anonymous function for the purpose that this code can be applied to other locations.
 
@@ -321,7 +338,7 @@ threeDFullFunction[{"Anchorage", "Alaska", "UnitedStates"}]
 <p align = "center" > Acyclic and Cyclic Morphological Graphs </p>
 
 
-### 2-D Satellite Mapping onto 3-D Model 
+## 2-D Satellite Mapping onto 3-D Model 
 
 The first step of this section is to find a way to take satellite imagery of a geographic location using GeoImage; afterwards, we will extract the river basin using imaging processing (using Color Matching once more) and layer both the satellite image and the river (using ImageCompose) to create a texture that could be mapped onto ListPlot3D to create a chunk of the specified geographic location. Let's see an example in Juneau, Alaska, we name it satelliteImage:
 
@@ -369,7 +386,7 @@ ListPlot3D[
 ```
 <p align = "center " > <img width="466" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a4f02f2f-073b-416d-83bf-bf5f90290c1c"> </p>
 
-### Relief Plot for Flood Plain
+## Relief Plot for Flood Plain
 
 A relief plot can be especially helpful to model the flood plain of a particular area. We can apply the function MinMax to find the range of the manipulate, ColorReplace to fill in the "flooded" space with RGBColor[0.6, 0.807843137254902, 1.0]  and Dynamic@ to synchronously reflect the changes made.
 
@@ -395,12 +412,12 @@ ListPlot3D[
 <p align = "center" > <img width="367" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/956a7bf0-fdf9-4a97-bf8b-e42bdda479a8"></p>
 
 
-### Rational Method (Q = CiA) Introduction and Usage
+## Rational Method (Q = CiA) Introduction and Usage
 
 The rational method  is used for determining peak discharges; this method is traditionally used to size storm sewers, channels, and other stormwater structures.
 
 The rational method formula is expressed as Q = CiA where: Q = Peak rate of runoff in cubic feet per second; C = Runoff coefficient, an empirical coefficient representing a relationship between rainfall and runoff; i = Average intensity of rainfall in inches per hour for the time of concentration for a selected frequency of occurrence or return period; A = The watershed area in acre. In this section, we will be calculating each of these variables and parameterizing them for any geographic location. 
-#### C Calculation
+## C Calculation
 As C is the runoff coefficient, we conducted a weighted average for all the colors present in the map with their coefficients taken from this table:
 
 <p align = "center" >
@@ -455,7 +472,7 @@ juneauPermeability = Mean[juneauCityWeightedByColor]
 ```
 Which gives us C = 0.633755
 
-#### I Calculation
+## I Calculation
 
 I is the intensity of the rainfall. Previous literature found that the intensity of rainfall for flash floods is usually around 4-6 inches; by taking the rainfall data using WeatherData for the past 20+ years, we are able to find an average annual rainfall measured in centimeters (which we converted to inches by dividing by 2.54). Next we mapped the intensity of rainfall (if it were to flood) and set it proportional to how high the annual rainfall is using a Which function.
 
@@ -481,7 +498,7 @@ juneauIntensityCalibrated =
 ```
 Which gives us I = 4.9
 
-#### A Calculation
+## A Calculation
 
 A is the area of the flood plain in acres; current data was in miles. To convert miles to acres, we have to square the region boundaries (the return result will be in square miles), then multiply by 640.
 ```Mathematica
@@ -489,7 +506,7 @@ juneauAcres = 20^2*640
 ```
 Which gives us A = 256000
 
-#### CiA (Q Calculation) & River Runoff Calculation
+## CiA (Q Calculation) & River Runoff Calculation
 
 ```Mathematica
 In[247]:= juneauPeakRunoff = 
@@ -516,7 +533,7 @@ riverRunoffCalculator[{x_, y_, z_}, h_] :=
 ```
 1422.29 => Elevation increase is 1422.29 feet increase if it rained for 750 hours straight in Juneau, Alaska
 
-### Relief Calculation Integration and Flood Analysis 
+## Relief Calculation Integration and Flood Analysis 
 
 Taking our previous ReliefPlot techniques, here is the plot for Juneau for the environment specifications, named juneauElevation:
 
@@ -556,7 +573,7 @@ Show[ListPlot3D[
 <p align = "center"> <img width="494" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/088c38c0-c169-43fa-9cc8-ebaa6bdefc9c">
 </p>
 
-#### Application to Simple River Systems
+## Application to Simple River Systems
 
 Simple river systems may present challenges to the flood plain analysis: rural landscapes may erroneously increase the complexity the mapping process, providing wrong measurements of rainfall and flooding elevation. These problems may cause the prediction to be inaccurate, hence our motivation to apply the code generally to all locations through better cleaning algorithms. Note that we added the parameter cityDimensions to make the plot ranging inclusive of all points in the 20 by 20 mile area.
 
@@ -652,7 +669,7 @@ In the jacksonGeo model, we simulated 152.786 feet of heavy rainfall over 200 ho
 <img width="466" height = "455" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/2450a1e6-b0c5-43f7-bbbd-57b5bcedffe4">
 </p>
 
-#### Application to Complex River Systems 
+## Application to Complex River Systems 
 Complex river systems may present challenges to the flood plain analysis: urban landscapes have varying ranges of elevation, diverse river tributaries, and sporadic weather. These problems may cause the prediction to be inaccurate, hence our motivation to apply the code generally to all locations through better cleaning algorithms. Note that we added the parameter cityDimensions to make the plot ranging inclusive of all points in the 20 by 20 mile area.
 
 ```Mathematica
@@ -751,7 +768,7 @@ In the anchorageGeo model, we simulated 1527.86 feet of heavy rainfall over 2000
 </p>
 
 
-### Tying Everything Together
+## Tying Everything Together
 
 Just for fun, here is a model that ties together both aspects of our project.
 
