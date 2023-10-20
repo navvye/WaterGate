@@ -1,4 +1,4 @@
-<img width="635" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/c1aaa4b6-d008-43a0-8036-9ae7c43f162a"># Introduction
+![image](https://github.com/navvye/WaterGate/assets/25653940/9c00fbaf-d02c-412e-830b-bfe3ce8be528)![image](https://github.com/navvye/WaterGate/assets/25653940/ffbe5c82-14f1-4972-bdf9-379900aa13e5)# Introduction
 
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
@@ -1564,3 +1564,52 @@ We choose the satellite images of blue color
 
 <img width="266" alt="Screenshot 2023-10-20 at 2 33 06 PM" src="https://github.com/navvye/WaterGate/assets/25653940/a07f687c-7558-4207-ac99-a97bce3f9748">
 </p>
+
+The images are not the same, hence we know that there has been a change in the water levels
+
+```Mathematica
+
+imgBinarize1 = Binarize[ColorNegate@Image[img1]]
+imgBinarize2 = Binarize[ColorNegate@Image[img2]]
+```
+
+<p align = "center"> 
+<img width="291" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/9d17a383-6a37-48e2-9f0e-723af3134b90">
+ <img width="284" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/e73b0c33-f59f-4015-b6a7-f279f397ad3b">
+</p>
+
+Find the Image Histogram of the two binary levels in the image.
+```Mathematica
+ImageHistogram/@{imgBinarize1, imgBinarize2}
+````
+<p align = "center">
+<img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/343662c7-57cf-4b90-b80b-9278bc96d18a">
+<img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/0f207592-e429-4efd-820b-f8de13541810">
+
+</p>
+
+The graphs appear similar, indicating that not a lot of change has taken place in the time period. We can find the change in the area 
+
+```Mathematica
+Last/@ImageLevels[imgBinarize1]
+Out[] = {32038, 62138}
+Ratio1 = 100*N[Last[%]/(Last[%] + First[%])]
+Out[] = 65.9807
+```
+Hence, Around 65.9807% of the region is covered by water in Image1
+```Mathematica
+
+Last/@ImageLevels[imgBinarize2]
+Out[] = {32085, 62091}
+Ratio2 = 100*N[Last[%]/(Last[%] + First[%])]
+Out[] = 65.9308
+```
+Around 65.9308% of the region is covered by water in Image1.
+
+Now, we can calculate the difference in water percentage
+```Mathematica
+DifferenceInWaterLevels = (Ratio1 - Ratio2)
+Out[] = 0.0499066
+```
+Result = 0.0499066
+
