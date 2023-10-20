@@ -1728,3 +1728,112 @@ clusters represent larger basins that form a unique hydro-graphical ecosystem wi
 <img width="333" height = "350" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/7960ea0d-2f3b-4cfd-90a4-4bb1ef0729f8">
 
 </p>
+
+
+## Weighted Cellular Automata Model 
+
+This is, in the authors opinion, the most important part of WaterGate. 
+
+Now, we will use a more complex cellular automata model to display the water flow. This model, called WCA2D, Weighted Cellular Automata 2D, uses a weight computing system and physical limitations to model water flow without too complex mathematical equations and fluid dynamics concepts (Guidolin et al., 2016).
+
+In the model, the ratios of water are transferred from the central cell to the downstream neighbor cells using a weight-based system. 
+The water transferred will be limited by Manning's formula and the critical flow equation, to produce a more accurate prediction of resulting water levels. 
+
+### Collecting Data 
+```Mathematica
+elevationdata = 
+  GeoElevationData[
+   Entity["City", {"AtlanticCity", "NewJersey", "UnitedStates"}], 
+   GeoRange -> Quantity[100, "Meters"], GeoProjection -> Automatic];
+elevationdata = Flatten[QuantityMagnitude[Normal@elevationdata]];
+elevationdata = elevationdata - Min[elevationdata]; 
+```
+Each coordinate point, with a corresponding elevation, constitutes a cell:
+
+```Mathematica
+graph = GridGraph[{7, 7}];
+```
+
+The area of a cell is defined by the area of region/number of cells. Edge length is the sqrt of the area
+
+```Mathematica
+area=100/Length[elevationdata];
+edgelength=Sqrt[area];
+```
+A small tolerance to set to help reduce oscillation. Downstream cells whose water levels are within tolerance of the center cell will be ignored, and won't receive water.
+
+```Mathematica
+tolerance = 0.1;
+```
+Now, we set the initial waterdepth to 5 at every cell(e.g. 5 in of rainfall)
+
+```Mathematica
+waterdepth = Table[5, 49];
+```
+### Algorithm
+
+To distribute the volume being transferred from the central cell to the neighborhood,  we use a weighting system. 
+1) Identify downstream cells
+2) Compute weights based on available storage volume
+3) Compute total volume leaving central cell
+4) For each downstream cell, calculate the new intercellular-volume
+We use helper functions in order to accompany this
+
+### Identifying Downstream Cells
+#### Finds the difference in water level(elevation+waterdepth) between center and ith neighbor:
+
+```Mathematica
+
+waterleveldiff[center_, 
+  i_] := (elevationdata[[center]] + 
+    waterdepth[[center]]) - (elevationdata[[i]] + waterdepth[[i]])
+```
+Available storage volume is the possible volume a neighbor cell can store from the center cell. Note that this value will be 0 for upstream cells since neighbor cells never give water. It is the water level difference, which is in m, multiplied by area (m^2). Note that if there are no eligible cells to receive water(either upstream or doesn't satisfy tolerance), this value is set to 0.
+
+**a) Finds available storage volume of the ith neighbor cell of center:**
+```Mathematica
+availstoragevol[center_,i_]:=Max[waterleveldiff[center,i],0]*area
+```
+**b) Determines whether a center cells has downstream cells:**
+
+```Mathematica
+
+upstream[center_]:=If[Select[neighbors[center],waterleveldiff[center,#]>tolerance&]=={},True,False]
+```
+### Weight Computing
+
+Helper Functions are defined as follows 
+
+**a) Finds the minimum available storage volume between all the neighbor cells of a center cell:**
+
+```Mathematica
+minstoragevol[center_]:=area*With[{list=Select[waterleveldiff[center,#]
+	&/@neighbors[center],#>tolerance&]},
+	If[list=={},0,Min[list]]]
+```
+
+**b) Finds the maximum available storage volume(used later but not in weights):**
+```Mathematica
+maxstoragevol[center_]:=area*With[{list=Select[waterleveldiff[center,#]
+	&/@neighbors[center],#>tolerance&]},
+	If[list=={},0,Max[list]]]
+```
+
+**c) Finds the index of the cell with maximum available storage volume:**
+```Mathematica
+Mcell[center_]:=neighbors[center][[Position[availstoragevol[center,#]&/@neighbors[center],maxstoragevol[center]][[1,1]]]]
+```
+
+**d) Finds the total volume that all the neighbor cells can receive from the center cell:**
+
+```Mathematica
+totstoragevol[center_]:=Total[availstoragevol[center,#]&/@neighbors[center]]
+```
+
+We use these functions to compute weights for the neighborhood, using the following equation:
+The weight of a downstream cell is the ratio between its available storage volume and the total available storage volume, representing a fraction of the volume that the center cell will give away. To reduce oscillations, we allow the center cell to retain a fraction of the volume transferred, giving it the same weight as the minimum storage volume. The weights should always add to 1.
+
+```Mathematica
+
+```
+
