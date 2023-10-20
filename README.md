@@ -1379,9 +1379,7 @@ Needs["IGraphM`"]
 
 ```
 
-tree = ![image](https://github.com/navvye/WaterGate/assets/25653940/5556fd3d-46d4-44af-a776-afa0ff9af457)
 ```Mathematica
-
 IGVertexMap[# &, VertexLabels -> IGStrahlerNumber, %]
 ```
 
