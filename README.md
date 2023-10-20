@@ -1484,7 +1484,7 @@ Out[] = EstimatedProcess[{0.415455, 0.105455, -0.724545,
 
 ## Using Real Time Satellite Imagery to Calculate Change in Water Levels 
 
-## Introduction to OpenWeatherMap 
+### Introduction to OpenWeatherMap 
 OpenWeatherMap is an online service, owned by OpenWeather Ltd, that provides global weather data via API, including current weather data, forecasts and historical weather data for any geographical location.
 Based on a large amount of processing satellite and climate data, it provides satellite imagery, vegetation indices and weather data as well as analytical reports and crop monitoring.
 
@@ -1492,10 +1492,10 @@ Based on a large amount of processing satellite and climate data, it provides sa
 <img width="730" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/f88a77d8-4ac6-4526-b43f-a9619e6d7aab">
 </p>
 
-## Explaining the API Process
+### Explaining the API Process
 The OpenWeatherMap API uses Polygons to store a unit of Area. We can create polygons either using a POST method, or by manually drawing them onto a map.  
 
-### Creating a Polygon using GeoJSON Coordinates
+#### Creating a Polygon using GeoJSON Coordinates
 
 <p align = "center"> 
 <img width="317" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/645fc69f-99e1-45f8-ae7d-2c0f19b60066">
@@ -1598,7 +1598,7 @@ Flatten[Table[Values[Values[%[[i]][[6]]]], {i, Length@%}]]
 <img width="635" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/906d7f83-870b-41ee-97a9-0f496a45d043">
 </p>
 
-## Calculating Change in Water Levels
+### Calculating Change in Water Levels
 
 We choose the satellite images of blue color  
 
