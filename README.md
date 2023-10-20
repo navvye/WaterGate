@@ -1,4 +1,4 @@
-# Introduction
+![image](https://github.com/navvye/WaterGate/assets/25653940/f210429e-7c5c-4b48-b7a9-b57fbd75bbe4)<img width="317" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/751d1058-fe08-4bd7-b4c1-1b59c7ea8827"># Introduction
 
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
@@ -1424,5 +1424,124 @@ ListPlot[{maxLevel RandomVariate[edist, 36], {{0, drought}, {36,
 ```
 <p align = 'center' > 
 <img width="706" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/add3c966-b4ec-4683-a7fb-7ba490c7a6e6">
+</p>
+
+
+```Mathematica
+
+data = ExampleData[{"Statistics", "MahanadiRiverFlow"}]
+mean = Mean[data];
+data0 = data - mean;
+eproc = EstimatedProcess[data0, FARIMAProcess[4, 3]]
+Out[] = EstimatedProcess[{0.415455, 0.105455, -0.724545, 
+  1.54545, -0.414545, -0.754545, 0.355455, 
+  1.11545, -1.51455, -0.0745455, -0.644545, 0.0454545, -0.524545, 
+  0.155455, 2.08545, -0.434545, 2.95545, 
+  0.185455, -1.00455, -0.894545, -1.34455, -0.634545}, 
+ FARIMAProcess[4, 3]]
+```
+
+## Using Real Time Satellite Imagery to Calculate Change in Water Levels 
+
+## Introduction to OpenWeatherMap 
+OpenWeatherMap is an online service, owned by OpenWeather Ltd, that provides global weather data via API, including current weather data, forecasts and historical weather data for any geographical location.
+Based on a large amount of processing satellite and climate data, it provides satellite imagery, vegetation indices and weather data as well as analytical reports and crop monitoring.
+
+<p align = 'center' > 
+<img width="730" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/f88a77d8-4ac6-4526-b43f-a9619e6d7aab">
+</p>
+
+## Explaining the API Process
+The OpenWeatherMap API uses Polygons to store a unit of Area. We can create polygons either using a POST method, or by manually drawing them onto a map.  
+
+### Creating a Polygon using GeoJSON Coordinates
+
+<p align = "center"> 
+<img width="317" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/645fc69f-99e1-45f8-ae7d-2c0f19b60066">
+</p>
+
+
+```Mathematica
+apiKey = "3b45dd32459f1d1d846105e225d9cd5c";
+url = "http://api.agromonitoring.com/agro/1.0/polygons?appid=" <> 
+   apiKey <> "&duplicated=true";
+headers = <|"Content-Type" -> "application/json"|>;
+payload = <|"name" -> "Test", 
+   "geo_json" -> <|"type" -> "Feature", "properties" -> <||>, 
+     "geometry" -> <|"type" -> "Polygon", 
+       "coordinates" -> {{{-122.26514, 38.673462}, {-122.232127, 
+           38.624054}, {-122.267076, 38.6017}, {-122.298185, 
+           38.633546}, {-122.26514, 38.673462}}}|>|>|>;
+Out[] = <|"name" -> "Test", 
+ "geo_json" -> <|"type" -> "Feature", "properties" -> <||>, 
+   "geometry" -> <|"type" -> "Polygon", 
+     "coordinates" -> {{{-122.265, 38.6735}, {-122.232, 
+         38.6241}, {-122.267, 38.6017}, {-122.298, 
+         38.6335}, {-122.265, 38.6735}}}|>|>|>
+```
+
+Execute the POST Request
+
+```Mathematica
+response = 
+ URLExecute[
+  HTTPRequest[
+   url, <|"Method" -> "POST", "Headers" -> headers, 
+    "Body" -> ExportString[payload, "RawJSON"]|>]]
+
+Out[] = {"id" -> "65203ca293997d62b1bfbdce", 
+ "geo_json" -> {"type" -> "Feature", "properties" -> {}, 
+   "geometry" -> {"type" -> "Polygon", 
+     "coordinates" -> {{{-122.265, 38.6735}, {-122.298, 
+         38.6335}, {-122.267, 38.6017}, {-122.232, 
+         38.6241}, {-122.265, 38.6735}}}}}, "name" -> "Test", 
+ "center" -> {-122.266, 38.6332}, "area" -> 2303.17, 
+ "user_id" -> "6519d9be86ec340008b8af3c", "created_at" -> 1696611490}
+```
+
+Now, we can verify that the polygon has been created:
+
+```Mathematica
+
+viewURL = 
+ Last[Import[
+   "http://api.agromonitoring.com/agro/1.0/polygons?appid=" <> 
+    apiKey]]
+
+Out[] = {"id" -> "65203ca293997d62b1bfbdce", 
+ "geo_json" -> {"type" -> "Feature", "properties" -> {}, 
+   "geometry" -> {"type" -> "Polygon", 
+     "coordinates" -> {{{-122.265, 38.6735}, {-122.298, 
+         38.6335}, {-122.267, 38.6017}, {-122.232, 
+         38.6241}, {-122.265, 38.6735}}}}}, "name" -> "Test", 
+ "center" -> {-122.266, 38.6332}, "area" -> 2303.17, 
+ "user_id" -> "6519d9be86ec340008b8af3c", "created_at" -> 1696611490}
+```
+Importing & Visualizing Data
+
+Importing the Data using the API is a two step process. We must first call the polygons ID API, and then use that to get Satellite, NDVI and other data in the JSON format. After that, we can process the data and look at some applications 
+
+```Mathematica
+
+urlToFetch = 
+ Import["https://api.agromonitoring.com/agro/1.0/image/search?start=\
+1646245800&end=1646850600&polyid=651f1602287b0e3c2bfcebe8&appid=\
+3b45dd32459f1d1d846105e225d9cd5c"]
+```
+
+Let's break down the URL
+1) image - to get the image data values 
+2) start  = EPOCH Time Start Value
+3) end = EPOCH Time End Value 
+4) polyID = PolygonID - can be found easily by visiting the website, or by looking at the metadata if you created the polygon using an API Request
+5) appID = APIKEY
+
+```Mathematica
+Map[Import, Flatten[Table[
+  Values[Values[urlToFetch[[i]][[6]]]], {i, Length[urlToFetch]}]]]
+```
+
+<p align = "center">
+<img width="635" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/453b4076-51b9-427b-b9f9-4f096c2f31c9">
 </p>
 
