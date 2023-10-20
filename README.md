@@ -1,4 +1,4 @@
-![image](https://github.com/navvye/WaterGate/assets/25653940/50ad3509-70c7-4dc4-9671-2de30c847792) # Introduction
+# Introduction
 
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
@@ -1769,7 +1769,7 @@ Manipulate[
    0, 10}, SaveDefinitions -> True]
 ```
 
-<p align = "image"> 
+<p align = "center"> 
 
 <img width="404" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/9c327d16-f0d1-4283-9e3d-a6530ff78ec7">
 </p>
@@ -1788,7 +1788,7 @@ Manipulate[
    Placed[BarLegend[Automatic, LegendLabel -> "Elevation"], {After, 
      Top}]], {sealevel, 0, 10}, SaveDefinitions -> True]
 ```
-<p align = "image"> 
+<p align = "center"> 
 <img width="472" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/b6658e32-d212-4793-9e1e-8aa1e4f9a22b">
 </p>
 
@@ -1824,7 +1824,7 @@ Manipulate[
    50, 600, 10}, SaveDefinitions -> True]
 ```
 
-<p align = "image"> 
+<p align = "center"> 
 
 <img width="404" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/e82fe623-c9bd-42fd-a655-8dee4cb481c3">
 </p>
@@ -1844,7 +1844,7 @@ Manipulate[
      Top}]], {sealevel, 50, 600, 10}, SaveDefinitions -> True]
 ```
 
-<p align = "image">
+<p align = "center">
 
  <img width="472" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ae0c86cf-ec69-4f99-8ecf-663922b1c78f">
 </p>
@@ -1855,7 +1855,7 @@ But, water flow has many other factors than just elevation and wouldn't just go 
 
 We used a Cellular Automata(CA) approach to simulate flooding across a region due to heavy rainfall (pluvial flooding) in 2D. Cellular automata are discrete models that simulate the behavior of individual cells based on predefined rules. The model divides the area of land into a discrete space of square grid cells. We will take the Von Neumann neighborhood for each cell, meaning a central cell has 4 neighbor cells adjacent to it. Water flows from the central cell to neighboring cells depending on the water flow rules that the model will set.
 
-<p align = "image">
+<p align = "center">
 <img width="186" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/abcd78cf-ced1-4c8b-818f-901b87cd6501"> 
  <img width="352" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/1cdb4235-3e63-460c-ba1d-48c13fd24791">
 </p>
