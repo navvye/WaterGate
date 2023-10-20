@@ -1713,8 +1713,9 @@ of the river basin. These groups represent bigger river basins or regions within
 
 Below is the watershed delineation for the SunderBans River before and after applying the Transitive Reduction Graph Functionality 
 <p align = "center"> 
-<img width="360" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/88c22786-aad4-4862-a808-6ef32cec181e">
-<img width="444" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/c54f42b8-8a76-48c2-9d68-6c1da50cb354">
+<img width="400" height = "400" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/88c22786-aad4-4862-a808-6ef32cec181e">
+<img width="400" height = "400" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/c54f42b8-8a76-48c2-9d68-6c1da50cb354">
+
 </p>
 
 Furthermore, we
@@ -1724,8 +1725,8 @@ between two adjacent sub-basins by the indexes of corresponding sub-basins and t
 connected together and what are the corresponding clusters made out of connected vertices. This would mean that
 clusters represent larger basins that form a unique hydro-graphical ecosystem with a unique water graph.
 <p align = "center">
- <img width="340" height = "350" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/f514cdc2-fc38-4a7a-a189-07fe092413a6">
-<img width="333" height = "350" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/7960ea0d-2f3b-4cfd-90a4-4bb1ef0729f8">
+ <img width="400" height = "400" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/f514cdc2-fc38-4a7a-a189-07fe092413a6">
+<img width="400" height = "400" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/7960ea0d-2f3b-4cfd-90a4-4bb1ef0729f8">
 
 </p>
 
