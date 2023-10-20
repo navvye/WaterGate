@@ -1960,6 +1960,9 @@ ListAnimate[
      ImageSize -> Large],
     smrule1[#] & /@ Range[49];}, {x, 1, 10}], SaveDefinitions -> True]
 ```
+[![](https://github.com/navvye/WaterGate/assets/25653940/9ed80c1c-6a08-477f-87a1-bdaf4cd4cd76)]([https://drive.google.com/file/d/1molPzDdNWS6KT89OSSa9JBdJdQ95955t/preview]))
+
+
 <figure class="video_container">
-  <iframe src="https://drive.google.com/file/d/1molPzDdNWS6KT89OSSa9JBdJdQ95955t/preview" frameborder="0" allowfullscreen="true"> </iframe>
+  <iframe src="" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
