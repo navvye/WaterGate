@@ -1,4 +1,6 @@
+<img width="535" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/6d9888d1-f7e1-423e-a103-bb83c22bbcc4">![image](https://github.com/navvye/WaterGate/assets/25653940/b50362ed-da67-4ead-89a3-10ead6e2c62e)
 # Introduction
+
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
 # Table of Contents 
@@ -1215,4 +1217,216 @@ Area[ImageMesh[colorNegatedDamExample]]
 
 Out[] = 16099
 ```
+
+#### Finding Depth 
+##### a) Using pure bathymetric functions
+
+Use bathymetry to find the volume
+
+```Mathematica
+gcarc = GeoPath[Table[i, {i, damContour}], "Geodesic"];
+gcarcDistance = 
+  GeoDistance[Table[i, {i, damContour}], UnitSystem -> "Metric"];
+profile = 
+  GeoElevationData[gcarc, Automatic, "GeoPosition", GeoZoomLevel -> 4];
+pts = profile[[1]][[1]];
+depths = #[[3]] & /@ pts;
+distances = 
+  QuantityMagnitude[
+     GeoDistance[{pts[[1]][[1 ;; 2]], #[[1 ;; 2]]}, 
+      UnitSystem -> "Metric"]] & /@ pts;
+avgDepth = UnitConvert[Quantity[Mean[depths], "Meters"], "Kilometers"]
+```
+##### b) Using Neural Networks
+
+We use the Single-Image Depth Perception Net Trained on NYU Depth V2 and Depth in the Wild Data.
+
+<p align = "center" > <img width="465" alt="Screenshot 2023-10-20 at 1 26 34 PM" src="https://github.com/navvye/WaterGate/assets/25653940/afe40fae-e04f-4432-bbb0-ce2adc2a73de">
+</p>
+<p align = "center" > <img width = "465" src = "https://github.com/navvye/WaterGate/assets/25653940/cfbf17f0-d596-4967-a342-0a8635ee9977"> </p>
+
+```Mathematica
+
+net = NetModel[
+  "Single-Image Depth Perception Net Trained on NYU Depth V2 and \
+Depth in the Wild Data"]
+depthMap = net[Image[GeoGraphics[GeoRange -> {{36.05, 36.17}, {-98.7, -98.52}}, 
+ GeoRangePadding -> Scaled[0.1], GeoBackground -> "Satellite"]]];
+ListPlot3D[-Reverse@Normal@depthMap, ImageSize -> Medium]
+```
+
+<p align = "center">
+<img width="394" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/59e83372-2105-4b0a-a983-b6bafbdab22a">
+
+</p>
+
+### Plotting Dams & Bridges on the same Map 
+
+In this section, we create a bunch of helper-functions to perform operations on Dams using their properties
+
+```Mathematica
+DamData[Entity["Dam", "TehriDam::q2zsw"], "River"]
+Out[] = {Entity["River", "Bhagirathi::wxk6g"]}
+```
+Create EntityClass of all the dams on a particular river
+
+```Mathematica
+DamsOn[River_] := 
+ EntityClass["Dam", "River" -> SemanticInterpretation[River]] // 
+  EntityList
+
+DamsOn["Bhagirathi River"]
+Out[] = {Entity["Dam", "ManeriDam::t599k"], 
+ Entity["Dam", "LoharinagPalaHydroPowerProject::x3gz9"], 
+ Entity["Dam", "TehriDam::q2zsw"]}
+```
+
+Get the position of all the Dams 
+
+```Mathematica
+
+PositionDams[River_] := 
+ Table[DamData[i, "Position"], {i, 
+   EntityClass["Dam", "River" -> SemanticInterpretation[River]] // 
+    EntityList}]
+```
+
+Position for the Ganges River
+
+```Mathematica
+
+PositionDams["Ganges River"]
+
+Out[] = {GeoPosition[{24.8044, 87.9331}], GeoPosition[{26.5099, 80.3186}], 
+ GeoPosition[{30.0742, 78.2883}]}
+```
+
+Get Images of Dams on a particular River
+
+```Mathematica
+
+ImagesOnPositionDams[River_] := 
+ Table[DamData[i, "Image"], {i, 
+   EntityClass["Dam", "River" -> SemanticInterpretation[River]] // 
+    EntityList}]
+ImagesOnPositionDams["Ganges River"]
+```
+
+```Mathematica
+
+AssortDamsOn[River_] := 
+ ReverseSortBy[
+  Table[{i, DamData[i, "HighestPoint"]}, {i, DamsOn[River]}], Last]
+AssortDamsOn["Ganges River"]
+
+Out[] = {{Entity["Dam", "FarakkaBarrage::6s3m8"], 
+  Quantity[2240., "Meters"]}, {Entity["Dam", 
+   "LavKhushBarrage::xptn2"], 
+  Quantity[621., "Meters"]}, {Entity["Dam", "PashulokBarrage::794pd"],
+   Quantity[320., "Meters"]}}
+```
+
+## Tying Everything Together Part II 
+
+Create an entity class of all the tributaries of the Mississippi river
+
+```Mathematica
+
+mississippiRiver = 
+  EntityClass["River", 
+    "Outflow" -> Entity["River", "MississippiRiver::mnr4z"]] // 
+   EntityList;
+DamsMississippi = 
+  FilteredEntityClass["Dam", 
+    EntityFunction[
+     y, ! MissingQ[y["Position"]] && 
+      ContainsAny[y["River"], 
+       Append[mississippiRiver, 
+        Entity["River", "MississippiRiver::mnr4z"]]]]] // EntityList;
+MississipiPlotDams = 
+ GeoRegionValuePlot[
+  EntityValue[DamsMississippi, "Length", "EntityAssociation"], 
+  AspectRatio -> 1, MissingStyle -> Transparent, 
+  GeoBackground -> "Satellite", ColorFunction -> "Rainbow"]
+```
+
+<p align = "center"> 
+Map of Dams and Bridges of the Mississippi River
+<img width="503" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/aa6137b1-6e0d-45a2-a070-ecfca699b117">
+</p>
+
+This shows a positive correlation between the location of tall dams and long bridges.
+
+## Creating Stream Order from Tree Graphs 
+
+The Strahler number or Horton\[Dash]Strahler number of a mathematical tree is a numerical measure of its branching complexity.
+
+<p align = "center">
+<img width="700" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a9038702-91c4-44f0-a3ab-f5564557232c">
+
+</p>
+
+The Algorithm for implementing the Strahler Stream Order is 
+1) If the node is a leaf (has no children), its Strahler number is one.
+2) If the node has one child with Strahler number i, and all other children have Strahler numbers less than i, then the Strahler number of the node is i again.
+3) If the node has two or more children with Strahler number i, and no children with greater number, then the Strahler number of the node is i + 1.
+
+We use the IGraph module.
+```Mathematica
+
+Needs["IGraphM`"]
+<< IGraphM`;
+
+```
+
+tree = ![image](https://github.com/navvye/WaterGate/assets/25653940/5556fd3d-46d4-44af-a776-afa0ff9af457)
+```Mathematica
+
+IGVertexMap[# &, VertexLabels -> IGStrahlerNumber, %]
+```
+
+## Statistical Analysis
+
+Statistical Analysis Code
+
+```Mathematica
+
+levels = 
+  Select[Drop[ExampleData[{"Statistics", "LakeMeadLevels"}], None, 
+     1] // Flatten, Positive];
+maxLevel = 1229;
+relativeLevels = levels/maxLevel;
+edist = EstimatedDistribution[relativeLevels, 
+  KumaraswamyDistribution[\[Alpha], \[Beta]]]
+Out[] = KumaraswamyDistribution[30.543, 2.7868]
+
+```
+
+```Mathematica
+
+Show[Histogram[relativeLevels, Automatic, "PDF"], 
+ Plot[PDF[edist, x], {x, 0.7, 1.1}, PlotStyle -> Thick]]
+```
+
+<p align = "center"> 
+<img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/e1623154-e2a4-4d84-8c0b-c436b6281d25">
+</p>
+
+```Mathematica
+
+drought = 1125;
+Probability[x*maxLevel < drought, x \[Distributed] edist]*100
+N[Probability[x*maxLevel < drought, x \[Distributed] edist]]*100
+maxLevel Mean[edist]
+Out[] = 1160.59
+```
+
+```Mathematica
+ListPlot[{maxLevel RandomVariate[edist, 36], {{0, drought}, {36, 
+    drought}}}, Filling -> {1 -> Axis}, Joined -> {True, True}]
+
+```
+<p align = 'center' > 
+<img width="706" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/add3c966-b4ec-4683-a7fb-7ba490c7a6e6">
+</p>
 
