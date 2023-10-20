@@ -1544,3 +1544,11 @@ Map[Import, Flatten[Table[
 <img width="635" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/453b4076-51b9-427b-b9f9-4f096c2f31c9">
 </p>
 
+
+```Mathematica
+Import["https://api.agromonitoring.com/agro/1.0/image/search?start=\
+1646245800&end=1646850600&polyid=651eb60393997d383cbfbdb9&appid=\
+3b45dd32459f1d1d846105e225d9cd5c"];
+Flatten[Table[Values[Values[%[[i]][[6]]]], {i, Length@%}]]
+
+```
