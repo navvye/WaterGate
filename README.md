@@ -778,7 +778,7 @@ In the anchorageGeo model, we simulated 1527.86 feet of heavy rainfall over 2000
 </p>
 
 
-## Tying Everything Together
+## Tying Everything Together Part I
 
 Just for fun, here is a model that ties together both aspects of our project.
 
@@ -881,3 +881,64 @@ parisElevated =
 <p align = "center"> <img width="779" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/c0459c66-56e0-47e4-9174-69d798dbfd11"> </p>
 
 
+## 2D & 3D Population Density Model
+
+Calculating population density can tell us how "at-risk" an area is at risk for flooding, hence an important metric to measure. While there are some built-in functions (GeoRegionValuePlot), the functional range is too limited and small.
+
+Take this example from New York:
+
+```Mathematica
+GeoRegionValuePlot[
+ EntityClass["AdministrativeDivision", "USCountiesNewYork"] -> 
+  "Population"]
+```
+<p align = "center" > <img width="501" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/5f0f2ab3-82d3-4000-bd3d-6f091aa91f68"> </p>
+
+To fix this, we simply used available population and landmass data to perform the population density calculation and project density through ListPlot3D. populationOverArea creates the ratio between the population and area of the specified area and textureDensity assigns the color based on the classifications of population density. Afterwards, we combine and overlay them using the same methods shown above.
+
+Here is the population density map of New York City, New York using the variables populationOverArea, textureDensity, newYorkImage, riverImage, combinedNewYorkImage, and newYorkPopulation:
+
+```Mathematica
+populationOverArea = 
+  Part[EntityValue[
+     Entity["City", {"NewYork", "NewYork", "UnitedStates"}], 
+     "Population"]/
+    EntityValue[
+     Entity["City", {"NewYork", "NewYork", "UnitedStates"}], "Area"], 
+   1];
+
+textureDensity = 
+  Which[populationOverArea < 1000, Darker[Darker[Green]], 
+   1000 < populationOverArea < 2000, Darker[Green], 
+   3000 < populationOverArea < 4000, Green, 
+   4000 < populationOverArea < 5000, Lighter[Green], 
+   5000 < populationOverArea < 6000, Lighter[Lighter[Green]], 
+   6000 < populationOverArea < 7000, Lighter[Lighter[Red]] , 
+   7000 < populationOverArea < 8000, Lighter[Red], 
+   8000 < populationOverArea < 9000, Red, 10000 < populationOverArea, 
+   Darker[Red]];
+
+newYorkImage = 
+  GeoImage[Entity["City", {"NewYork", "NewYork", "UnitedStates"}], 
+   GeoRange -> Quantity[10, "Miles"]];
+riverImage = 
+  ImageRecolor[
+   Binarize[
+    ColorNegate[
+     GeoImage[Entity["City", {"NewYork", "NewYork", "UnitedStates"}], 
+      "StreetMapNoLabels", 
+      GeoRange -> Quantity[10, "Miles"]]]], {White -> 
+     RGBColor[0, 0, Rational[2, 3], 0.5], 
+    Black -> RGBColor[0.5, 0.5, 0.5, 0]}];
+combinedNewYorkImage = ImageCompose[newYorkImage, riverImage];
+newYorkPopulation = Blend[{combinedNewYorkImage, textureDensity}];
+ListPlot3D[
+ GeoElevationData[
+  Entity["City", {"NewYork", "NewYork", "UnitedStates"}], 
+  GeoRange -> Quantity[10, "Miles"]], MeshFunctions -> {#3 &}, 
+ PlotRange -> All, 
+ PlotStyle -> Texture[ImageRotate[newYorkPopulation, 3 Pi/2]], 
+ Filling -> Bottom, FillingStyle -> Opacity[1], ImageSize -> 1000]
+```
+
+<p align = "center" > <img width="663" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/b513a01d-aa19-4042-92c7-d8b625e24533"> </p>
