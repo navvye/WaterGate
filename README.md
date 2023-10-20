@@ -69,7 +69,7 @@ Welcome to the WaterGate documentation! WaterGate is an accessible computational
       - [Depth Updating](#depth-updating)
       - [Data Visualization](#data-visualization)
         * [Atlantic City](#atlantic-city-1)
-          + [Princeton](#princeton)
+        * [Princeton](#princeton)
     + [Conclusion](#conclusion)
 
 # Abstract
@@ -2223,7 +2223,7 @@ ListAnimate[
 
 </p>
 
-###### Princeton
+##### Princeton
 We will apply this model on a portion of Princeton, New Jersey. To change dimensions, we re-define graph, area, and use the function reset.
 
 ```Mathematica
