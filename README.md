@@ -239,7 +239,7 @@ polygonComponents[{x3_, y3_, z3_}] :=
 
 ```
 <p align = "center"> 
-<img width="299" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/7b2ba3d8-2713-4618-b4fc-e1bee0dd1b30"> <img width="287" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a3f0f230-9714-41c6-9850-1f43cadebbfb"> <img width="287" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/6e5021d4-db75-4f9a-823b-a76fdfcd00e0">
+<img width="299" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/7b2ba3d8-2713-4618-b4fc-e1bee0dd1b30"> <img width="287" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a3f0f230-9714-41c6-9850-1f43cadebbfb">
 </p>
 
 We'll turn the image into a morphological graph using the threeDFullfunction through MorphologicalGraph and Graph3D:
