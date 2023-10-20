@@ -1349,7 +1349,6 @@ MississipiPlotDams =
 ```
 
 <p align = "center"> 
-Map of Dams and Bridges of the Mississippi River
 <img width="503" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/aa6137b1-6e0d-45a2-a070-ecfca699b117">
 </p>
 
