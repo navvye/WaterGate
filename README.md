@@ -71,9 +71,6 @@ Welcome to the WaterGate documentation! WaterGate is an accessible computational
         * [Atlantic City](#atlantic-city-1)
           + [Princeton](#princeton)
     + [Conclusion](#conclusion)
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
 
 # Abstract
 240 million people are affected by floods each year, reflecting the urgent need for accessible flood prediction and detection. WaterGate is a computational model that uses geographic elevation data and the rational method to predict flooding patterns , generating an interactive 3D model for user accessibility. Computational hydrology applies numerical methods, machine learning algorithms, and computational simulations to understand, predict, and manage water resources - including floods. Our project employs computational hydrology by analyzing the structure of river tributaries in 2D through polygon clustering, satellite imaging, and various cleaning protocols. We developed respective tributary tree graphs, morphological graphs, and nodes to create a comprehensive tree and 3D model. Afterward, we examine the morphology of flood plains in 3D space, implementing the rational method (Q = C iA) framework with curated relief plots to predict, model, and visualize flooding elevation. Then, we constructed our stream order analysis, waterline delineation, and statistical analysis to validate our data. Lastly, we modeled different river systems and developed further extensions to increase the applicability of WaterGate to communities around the world.
@@ -2277,3 +2274,4 @@ Looking at the ArrayPlot of the water depths and the reversed ArrayPlot elevatio
 ### Conclusion
 With an increasing need for accurate models to mitigate impacts of flooding in urban areas and coastal regions, this project explores different approaches for water flow modeling: the bathtub inundation model and the cellular automata model. One challenges I encountered was considering the order of updating the cells and updating the grid simultaneously. Weighted cellular automata model provides a very gradient smooth distribution of water levels. Most of the water (~80%) is transferred within the first time step, and the other water fluctuates for the next few iterations. For smaller grids, the water is pretty constant by the 10th iteration. In this project, I learned about cellular automata and hopefully this model can be used in applications to predicting water spread and preventing large-scale floods.
 
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
