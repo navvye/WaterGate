@@ -1,4 +1,3 @@
-
 # Introduction
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
@@ -942,3 +941,278 @@ ListPlot3D[
 ```
 
 <p align = "center" > <img width="663" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/b513a01d-aa19-4042-92c7-d8b625e24533"> </p>
+
+## Large Scale Modeling of River Width
+
+We can model the river width of a certain river and its contributing tributaries through determining the length of notable bridges that cross the river from its origin to its delta. Specifically, we will use the functions FilteredEntityClass and GeoRegionValuePlot to create our river width weights.
+Here is an example from the Missouri River
+```Mathematica
+missouriRiver = 
+  EntityClass["River", 
+    "Outflow" -> Entity["River", "MissouriRiver::72qm4"]] // 
+   EntityList;
+bridgeMissouri = 
+  FilteredEntityClass["Bridge", 
+    EntityFunction[
+     x, ! MissingQ[x["Position"]] && 
+      ContainsAny[x["Crosses"], 
+       Append[missouriRiver, 
+        Entity["River", "MissouriRiver::72qm4"]]]]] // EntityList;
+GeoRegionValuePlot[
+ EntityValue[bridgeMissouri, "Length", "EntityAssociation"], 
+ AspectRatio -> 1, MissingStyle -> Transparent, 
+ GeoBackground -> "Satellite"]
+```
+
+<p align = "center"> <img width="482" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/fd9fe5b2-26e4-4c81-8d16-11d44be6cbff"> </p>
+
+A more comprehensive example that incorporates the river delta in relation with the origin is the Mississippi Rive, where we can see the gradual increase of river width as it moves towards the river delta. 
+```Mathematica
+mississippiRiver = 
+ EntityClass["River", 
+   "Outflow" -> Entity["River", "MississippiRiver::mnr4z"]] // 
+  EntityList
+bridgesMississippi = 
+  FilteredEntityClass["Bridge", 
+    EntityFunction[
+     y, ! MissingQ[y["Position"]] && 
+      ContainsAny[y["Crosses"], 
+       Append[mississippiRiver, 
+        Entity["River", "MississippiRiver::mnr4z"]]]]] // EntityList;
+MississipiPlot = 
+ GeoRegionValuePlot[
+  EntityValue[bridgesMississippi, "Length", "EntityAssociation"], 
+  AspectRatio -> 1, MissingStyle -> Transparent, 
+  GeoBackground -> "Satellite"]
+```
+
+<p align = "center" > <img width="482" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/0593a0b3-c5c1-4dd6-8207-abce5e6d5e08">
+</p>
+
+## Using Bridges and Their Data
+
+Getting tributaries for the famous Hudson River using the Outflow Functionality
+```Mathematica
+hudsonRiver = 
+ EntityClass["River", "Outflow" -> Entity["River", "Hudson::ry5x6"]] //
+   EntityList![image](https://github.com/navvye/WaterGate/assets/25653940/5485b4fc-88d7-42f9-9654-299cb0c2bf8b)
+```
+
+Creating a filtered entity class for those bridges that cross the hudson and it's tributaries and for which the position property is available
+
+```Mathematica
+bridgeHudson = 
+ FilteredEntityClass["Bridge", 
+   EntityFunction[
+    x, ! MissingQ[x["Position"]] && 
+     ContainsAny[x["Crosses"], 
+      Append[hudsonRiver, Entity["River", "Hudson::ry5x6"]]]]] // 
+  EntityList
+```
+<p align = "center"> <img width="635" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/81a55659-d117-46ab-b2e6-bc141c4cdb74"> </p>
+
+Now we use the GeoRegionValuePlot on a Satellite Map 
+
+```Mathematica
+HudsonBridges = 
+ GeoRegionValuePlot[
+  EntityValue[bridgeHudson, "Length", "EntityAssociation"], 
+  AspectRatio -> 1, MissingStyle -> Transparent, 
+  GeoBackground -> "Satellite"]
+```
+<p align = "center" > <img width="482" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/afefa75e-ee1b-4058-a546-e0e5a19d7333">
+</p>
+
+We can show the Population of New York State and the length of bridges in meters on the same graph
+
+<p align = "center" > <img width="554" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/d0c9da3c-2b33-4482-9d9b-1eb89063ee3b">
+</p>
+
+There seems to be some correlation between the population density of a place, and the length of the it's longest bridge (on the hudson river and it's tributaries). Now, we plot the graph of the Mississippi River with respect to the population  of states in the United States
+
+```Mathematica
+Show[{GeoRegionValuePlot[
+ EntityClass["AdministrativeDivision", "USStatesAllStates" ] -> 
+  "Population", ColorFunction -> "Rainbow", 
+ GeoBackground -> "ReliefMap"], <img width="420" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/314491aa-8faf-4f9c-b52a-c1b0a5fa22c4">
+}
+```
+<p align = "center" ><img width="630" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/4d0533cd-4a32-41ab-95f1-64b50d6a261e">
+</p>
+
+
+## Study of Bridges in Cities
+
+### Bridge Density
+We define the bridge density of a city to be the percentage of area covered by bridges to the percentage of area covered by water
+```Mathematica
+BridgePlot[city_] := 
+ ImageResize[GeoListPlot[GeoEntities[SemanticInterpretation[city]
+    , "Bridge"], GeoBackground -> "VectorMinimal"], 500];
+ImageBridgePlot = ColorReplace[BridgePlot["New York State"], 
+ FindMatchingColor[BridgePlot["New York State"], Red] -> Black]
+```
+<p align = "center" > <img width="365" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/3edb32f3-a8dd-4f75-a4a3-00e72da647f9">
+</p>
+
+```Mathematica 
+
+ColorNegate[Binarize[%]]
+levels = Last /@ ImageLevels[Image[%]]
+N[Last[levels]*100/(First[levels] + Last[levels])]
+```
+Which returns 2.87407, implying that the percentage of area covered by Bridges in New York State is around 2.9%.
+
+Now, we calculate the percentage of area covered by water in New York State
+
+```Mathematica
+riverNYC = 
+ Graphics[
+  Select[Cases[
+    GeoGraphics[
+     Entity["AdministrativeDivision", {"NewYork", "UnitedStates"}], 
+     GeoBackground -> 
+      "VectorMinimal"], {Directive[{___, 
+       RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___}, Infinity], 
+   Not@*FreeQ[Polygon]]]
+ColorNegate[Binarize[riverNYC]]
+levels = Last /@ ImageLevels[Image[%]]
+N[Last[levels]/(First[levels] + Last[levels])]
+```
+Hence, water covers approximately 18.3865% of New York. 
+
+We can now combine the two observations using a ratio Function
+
+```Mathematica
+BridgeDensityNewYork = (2.87/18.3865)
+Out[] = 0.183865
+```
+
+And of course, we can wrap this neatly in a function 
+
+```Mathematica
+BridgeDensity[place_] := 
+ Module[{bridgePlotCity, bridgeImage, bridgeLevels, bridgeRatio, 
+   riverCity, riverImage, riverLevels, riverRatio}, 
+  bridgePlotCity = BridgePlot[place];
+  bridgeImage = 
+   ColorNegate[
+    Binarize[
+     ColorReplace[bridgePlotCity, 
+      FindMatchingColor[bridgePlotCity, Red] -> Black]]];
+  bridgeLevels = Last /@ ImageLevels[Image[bridgeImage]];
+  bridgeRatio = 
+   N[Last[bridgeLevels]*100/(First[bridgeLevels] + 
+        Last[bridgeLevels])];
+  riverCity = 
+   Graphics[
+    Select[Cases[
+      GeoGraphics[SemanticInterpretation[place], 
+       GeoBackground -> 
+        "VectorMinimal"], {Directive[{___, 
+         RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___}, 
+      Infinity], Not@*FreeQ[Polygon]]];
+  riverImage = ColorNegate[Binarize[riverCity]];
+  riverLevels = Last /@ ImageLevels[Image[riverImage]];
+  riverRatio = 
+   N[Last[riverLevels]/(First[riverLevels] + Last[riverLevels])];
+  Return[bridgeRatio/riverRatio]]
+```
+
+
+## Using Dams and their Data 
+
+Extracting Dams from Satellite Images 
+
+```Mathematica
+DamData[SemanticInterpretation["Tehri Dam"], "Position"]
+GeoGraphics[GeoPosition[{30.377778`, 78.480556`}], 
+ GeoBackground -> "VectorBusiness"]
+```
+<p align = "center" > 
+ <img width="440" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/6220028f-1f74-4d22-90ad-05a940a13dca">
+</p>
+
+```Mathematica
+geoImage = 
+ DeleteSmallComponents[
+  Dilation[
+   Graphics[
+    Select[Cases[
+      GeoGraphics[
+       GeoBoundingBox[GeoPosition[{30.377778`, 78.480556`}]], 
+       GeoBackground -> 
+        "VectorMinimal"], {Directive[{___, 
+         RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___}, 
+      Infinity], Not@*FreeQ[Polygon]]], 0]]
+```
+
+<p align = "center" > <img width="291" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/6856885f-edbc-4215-a4c5-04ecd123c21f"> </p>
+
+```Mathematica
+ColorNegate[Binarize[geoImage]];
+levels = Last /@ ImageLevels[Image[%]];
+N[Last[levels]/(First[levels] + Last[levels])]
+
+Out[] = 0.0244169
+```
+Hence, the Tehri covers approximately 2.44169% of the surrounding area.
+
+### An Attempt to Compute the Volume & Area of Dam using Satellite Images
+
+#### Finding Area 
+```Mathematica
+GeoGraphics[GeoRange -> {{36.05, 36.17}, {-98.7, -98.52}}, 
+ GeoRangePadding -> Scaled[0.1], GeoBackground -> "Satellite"]
+```
+<p align = "center" > <img width="420" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/8f595024-62bd-4224-ae3b-ad7f6ecad746">
+</p>
+
+Creating a dam contour by manually using the Geo-Coordinates Tool
+```Mathematica
+damContour = {{36.14216500804076`, -98.66601000992658`}, \
+{36.15131161335255`, -98.6549477815357`}, {36.1501032100147`, \
+-98.62214348441108`}, {36.15000037203102`, -98.60908533742007`}, \
+{36.13193732747872`, -98.58352140011719`}, {36.10128112030604`, \
+-98.57004960135653`}, {36.08009879008038`, -98.6043835918035`}, \
+{36.1172565230945`, -98.61315564049649`}, {36.12831708030723`, \
+-98.62663775701455`}, {36.13202116684048`, -98.64507269213401`}, \
+{36.13870030579935`, -98.6454368865287`}, {36.13708633726377`, \
+-98.6568745786338`}};
+GeoGraphics[{White, Thick, Line[GeoPosition[damContour]]}, 
+ GeoRange -> {{36.05, 36.17}, {-98.7, -98.52}}, 
+ GeoRangePadding -> Scaled[0.1], GeoBackground -> "Satellite"]
+```
+<p align = "center" > 
+<img width="420" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/bf2d9a15-d0a2-4895-87bd-7a249ce39e1b">
+</p>
+
+```Mathematica
+Ar = GeoArea[Polygon[GeoPosition[damContour]]]
+Out[] = Quantity[27.6167, ("Kilometers")^2]
+```
+The area is relatively accurate.
+
+Alternatively, we can also use the ImageMesh functionality — but this is only useful whilst comparing bridges from one to another.
+
+The code has been provided here 
+
+```Mathematica
+
+DamExample = 
+ Graphics[
+  Select[Cases[
+    GeoGraphics[GeoRange -> {{36.05, 36.17}, {-98.7, -98.52}}, 
+     GeoRangePadding -> Scaled[0.1], 
+     GeoBackground -> 
+      "VectorMinimal"], {Directive[{___, 
+       RGBColor[0.6, 0.807843137254902`, 1.], ___}], ___}, Infinity], 
+   Not@*FreeQ[Polygon]]]
+
+colorNegatedDamExample = ColorNegate[Binarize[DamExample]]
+
+Area[ImageMesh[colorNegatedDamExample]]
+
+Out[] = 16099
+```
+
