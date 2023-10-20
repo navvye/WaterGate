@@ -1846,7 +1846,7 @@ Manipulate[
 
 <p align = "center">
 
- <img alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ae0c86cf-ec69-4f99-8ecf-663922b1c78f">
+ <img width = "404" height = "404" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ae0c86cf-ec69-4f99-8ecf-663922b1c78f">
 </p>
 
 But, water flow has many other factors than just elevation and wouldn't just go where the lowest elevation. While the bathtub model captures the the general idea of where water will travel, our cellular automata model will consider more factors of how water flows and more accurately predict  water spread. 
