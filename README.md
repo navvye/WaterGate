@@ -1,4 +1,4 @@
- # Introduction
+![image](https://github.com/navvye/WaterGate/assets/25653940/50ad3509-70c7-4dc4-9671-2de30c847792) # Introduction
 
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
@@ -1718,8 +1718,7 @@ Below is the watershed delineation for the SunderBans River before and after app
 
 </p>
 
-Furthermore, we
-can use the KCoreComponent functionality and highlight the important subgraphs in a complex graph system. These
+Furthermore, we can use the KCoreComponent functionality and highlight the important subgraphs in a complex graph system. These
 watershed-delineations are way more accurate compared to the first one. Another way to do this is to label the boundary
 between two adjacent sub-basins by the indexes of corresponding sub-basins and then gauge at how the vertices are
 connected together and what are the corresponding clusters made out of connected vertices. This would mean that
@@ -1727,9 +1726,137 @@ clusters represent larger basins that form a unique hydro-graphical ecosystem wi
 <p align = "center">
  <img width="400" height = "400" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/f514cdc2-fc38-4a7a-a189-07fe092413a6">
 <img width="400" height = "400" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/7960ea0d-2f3b-4cfd-90a4-4bb1ef0729f8">
-
 </p>
 
+## Using cellular automata 
 
+### Introduction 
 
+Flooding in urban areas may cause severe damage to infrastructure and uproot communities. Cities by the ocean also regularly face coastal flooding. Accurate modeling of water flow is crucial for various applications, such as urban planning, flood prediction, and water resource management. With increased flood rates around the world, we decided to create a flood inundation model.	In this section, we model water runoff using two different approaches: a bathtub inundation model and a cellular automata model.  We want to visualize regions that will get the most water during heavy rainfall. The model assumes uniform rainfall, and hydrological losses are not considered. By incorporating the bathtub model into our framework, we ensure that water is distributed uniformly over the simulated area, facilitating an initial estimation of water accumulation and infiltration. Using a weighted cellular automata model enables a more realistic representation of water flow dynamics, accounting for the physical limitations on water velocity through the use Manning's formula and the critical flow equation. 
+
+#### Locations
+
+We ran the model over the following locations: 
+
+1) Atlantic City, NJ
+2)Delaware River(PA & NJ)
+3)Princeton, NJ
+
+### Elevation Bathtub Model
+
+To start, we used the simple bathtub inundation model to display the purpose of the project, which is to show where water will food when the water level is raised. The model assumes that the areas will be inundated if their elevation is below the projected water level.
+
+#### Atlantic City
+Atlantic City is a coastal resort city in New Jersey, know for its many casinos, wide beaches, and Boardwalk. It is frequently flooded by the Atlantic Ocean, especially with the ocean rising at faster rates in the future. 
+
+We access Wolfram' s GeoElevationData for Atlantic City, that is stored in a 2 D Quantity Array :
+```Mathematica
+data = GeoElevationData[
+   Entity["City", {"AtlanticCity", "NewJersey", "UnitedStates"}], 
+   GeoRange -> Quantity[5, "Kilometers"], GeoProjection -> Automatic];![image](https://github.com/navvye/WaterGate/assets/25653940/1b0b0b58-125d-49ce-8e77-74fac51677eb)
+```
+
+Here, we created a visualization that allows you to manipulate the sea level to observe which regions will be flooded. We used the Manipulate, ListPlot3D to plot the GeoElevationData, and used ColorFunction to set regions below sea level to blue.
+
+```Mathematica
+Manipulate[
+ ListPlot3D[Reverse[data], MeshFunctions -> {# &}, Mesh -> 30, 
+  ImageSize -> Medium, 
+  ColorFunction -> 
+   Function[{x, y, z}, 
+    If[z <= sealevel, ColorData["DeepSeaColors"][0.1 z + 2], 
+     RGBColor["#a38672"]]], ColorFunctionScaling -> False], {sealevel,
+   0, 10}, SaveDefinitions -> True]
+```
+
+<p align = "image"> 
+
+<img width="404" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/9c327d16-f0d1-4283-9e3d-a6530ff78ec7">
+</p>
+
+We can also visualize this in 2D, using a ReliefPlot.
+
+```Mathematica
+Manipulate[
+ ReliefPlot[data, 
+  ColorFunction -> 
+   Function[{x}, 
+    If[x <= sealevel, ColorData["DeepSeaColors"][0.1 x + 2], 
+     ColorData["SandyTerrain"][0.1 x]]], 
+  ColorFunctionScaling -> False, 
+  PlotLegends -> 
+   Placed[BarLegend[Automatic, LegendLabel -> "Elevation"], {After, 
+     Top}]], {sealevel, 0, 10}, SaveDefinitions -> True]
+```
+<p align = "image"> 
+<img width="472" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/b6658e32-d212-4793-9e1e-8aa1e4f9a22b">
+</p>
+
+#### Delaware River
+
+We will also apply the bathtub model to the Delaware River in the East Coast of the US. 
+
+We generate a list of coordinates based on the part of the Delaware River we want to focus. I will focus on the Pennsylvania-New Jersey section, stretching from New Hope, PA, to Hopewell, NJ:
+
+```Mathematica
+DEcoords = 
+  Table[{x, y}, {x, 40.188083, 
+    40.353025, .001}, {y, -74.959693, -74.730801}];
+```
+
+Then, I get the GeoPosition at the coordinates so I can use GeoElevationData on my coordinates.
+
+```Mathematica
+DEdata = GeoElevationData[GeoPosition /@ Flatten[DEcoords, 1]];
+```
+
+We'll visualize this again in 3D and 2D.
+
+```Mathematica
+Manipulate[
+ ListPlot3D[Reverse[DEdata], MeshFunctions -> {# &}, Mesh -> 30, 
+  ImageSize -> Medium, 
+  ColorFunction -> 
+   Function[{x, y, z}, 
+    If[z <= sealevel, ColorData["DeepSeaColors"][0.01 z], 
+     ColorData["SandyTerrain"][0.001 z + 0.6]]], 
+  ColorFunctionScaling -> False, PlotLegends -> Automatic], {sealevel,
+   50, 600, 10}, SaveDefinitions -> True]
+```
+
+<p align = "image"> 
+
+<img width="404" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/e82fe623-c9bd-42fd-a655-8dee4cb481c3">
+</p>
+
+Using ReliefPlots
+
+```Mathematica
+Manipulate[
+ ReliefPlot[DEdata, 
+  ColorFunction -> 
+   Function[{x}, 
+    If[x <= sealevel, ColorData["DeepSeaColors"][0.01 x], 
+     ColorData["SandyTerrain"][0.001 x + 0.6]]], 
+  ColorFunctionScaling -> False, 
+  PlotLegends -> 
+   Placed[BarLegend[Automatic, LegendLabel -> "Elevation"], {After, 
+     Top}]], {sealevel, 50, 600, 10}, SaveDefinitions -> True]
+```
+
+<p align = "image">
+
+ <img width="472" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ae0c86cf-ec69-4f99-8ecf-663922b1c78f">
+</p>
+
+But, water flow has many other factors than just elevation and wouldn't just go where the lowest elevation. While the bathtub model captures the the general idea of where water will travel, our cellular automata model will consider more factors of how water flows and more accurately predict  water spread. 
+
+### Cellular Automata Approach
+
+We used a Cellular Automata(CA) approach to simulate flooding across a region due to heavy rainfall (pluvial flooding) in 2D. Cellular automata are discrete models that simulate the behavior of individual cells based on predefined rules. The model divides the area of land into a discrete space of square grid cells. We will take the Von Neumann neighborhood for each cell, meaning a central cell has 4 neighbor cells adjacent to it. Water flows from the central cell to neighboring cells depending on the water flow rules that the model will set.
+
+<p align = "image">
+<img width="186" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/abcd78cf-ced1-4c8b-818f-901b87cd6501"> 
+ <img width="352" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/1cdb4235-3e63-460c-ba1d-48c13fd24791">
+</p>
 
