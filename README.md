@@ -1,4 +1,4 @@
-# Introduction
+![image](https://github.com/navvye/WaterGate/assets/25653940/275509b8-d208-4cdb-994e-b9a1cd844699)# Introduction
 
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
 
@@ -1613,3 +1613,118 @@ Out[] = 0.0499066
 ```
 Result = 0.0499066
 
+
+## Watershed Delineation 
+
+Watershed delineation refers to the process of identifying the boundary of a water-basin, drainage basin or
+catchment. It is an extremely important process in the fields of environment science and hydrology.We start by taking
+the Magnitude of the elevation of Sundarbans National Park, a famous delta basin system in India and Bangladesh.
+Then, we use the ReliefPlot functionality to generate a relief plot from the array of height values.
+
+```Mathematica
+data = N[
+   QuantityMagnitude[
+    GeoElevationData[
+     Entity["Park", "SundarbansNationalParkOfIndia::vr2b8"]]]];
+reliefmap = 
+ ReliefPlot[data, DataReversed -> True, 
+  PlotLegends -> BarLegend[Automatic, LegendLabel -> "elevation(m)"]]
+```
+<p align = "center">
+<img width="446" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/0ed7bc16-4bdb-45af-884e-e57ca22a1dbf">
+</p>
+Next, we create an image using the array of geo-elevation values, and use the ImageAdjust function - which adjusts
+the levels in image, rescaling them to account for bad lighting.
+
+```Mathematica 
+mimg = ImageAdjust@Image[data]
+```
+
+<p align = "center">
+<img width="470" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/0d317ca0-4fdb-44a1-bc6d-057e48e8d589">
+</p>
+
+```Mathematica
+wsc = WatershedComponents[mimg, Method -> "Immersion"];
+````
+The watershed components functionality returns the transform of an image, computes the watershed transform of
+image, and returns the result as an array in which positive integers label the catchment basins. We then create an image
+on the basis of the watershed components, and then apply color negate to the image to create a binary image. This
+allows us to clearly see the de-segmentation of the basis into sub-basins, which is very useful.
+
+```Mathematica
+
+bnds = ColorNegate@Image[wsc, "Bit"]
+```
+
+<p align = "center"> 
+<img width="470" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/43c9f68c-67a9-4e38-a398-2c82c7caa515">
+</p>
+
+
+Next, we apply functions such as Erosion and Dilation to obtain data about the image, and then create an association
+thread between the two datasets. We then create a function to evaluate the components of the image that are minimum
+and at the border of the image, and weed them out. 
+
+```Mathematica
+bindex = Erosion[Replace[wsc, 0 -> Max[wsc] + 1, {2}], 1]
+tindex = Dilation[wsc, 1]
+
+doubleIndexArray = 
+ Replace[Transpose[{bindex, tindex}, {3, 1, 2}], {n_, n_} -> {0, 
+    0}, {2}]
+{data, mimg, wsc, bnds, bindex, tindex, doubleIndexArray, 
+   doubleIndexPairs, bndSegs, MinATborders, g0, g1, 
+   basinConnect} = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+funcDelineate[region_] := Module[{}, 
+  data = 
+   N[QuantityMagnitude[
+     GeoElevationData[SemanticInterpretation[region]]]];
+  mimg = ImageAdjust@Image[data];
+  wsc = WatershedComponents[mimg, Method -> "Immersion"];
+  bnds = ColorNegate@Image[wsc, "Bit"];
+  bindex = Erosion[Replace[wsc, 0 -> Max[wsc] + 1, {2}], 1];
+  tindex = Dilation[wsc, 1];
+  doubleIndexArray = 
+   Replace[Transpose[{bindex, tindex}, {3, 1, 2}], {n_, n_} -> {0, 
+      0}, {2}];
+  doubleIndexPairs = 
+   Prepend[DeleteCases[
+     DeleteDuplicates[Flatten[doubleIndexArray, 1]], {0, 0}], {0, 
+     0}];
+  bndSegs = 
+   Replace[doubleIndexArray, 
+    Dispatch@MapIndexed[#1 -> First[#2] - 1 &, doubleIndexPairs], {2}];
+  MinATborders = 
+   Thread[Rest[doubleIndexPairs] -> 
+     ComponentMeasurements[{mimg, bndSegs}, "Min"][[All, 2]]];
+  g0 = Graph[Apply[UndirectedEdge, Rest@doubleIndexPairs, {1}]];
+  g1 = WeaklyConnectedGraphComponents[g0][[1]];
+  basinConnect = 
+   Sort[Map[# -> AdjacencyList[g1, #] &, VertexList[g1]]];
+  
+  Print[GraphPlot3D@g1]
+  ]
+```
+
+The interaction between various basin components, such as how water flows between them, is known as the hydrological connectedness of a river basin. A graph can be used to illustrate this connectivity, with each vertex representing a section of the basin and the edges denoting the links among them.
+In this context, clusters are collections of linked vertices that constitute functional units in the hydrographical ecology
+of the river basin. These groups represent bigger river basins or regions within it that have comparable hydrological
+
+Below is the watershed delineation for the SunderBans River before and after applying the Transitive Reduction Graph Functionality 
+<p align = "center"> 
+<img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/88c22786-aad4-4862-a808-6ef32cec181e">
+<img width="440" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/c54f42b8-8a76-48c2-9d68-6c1da50cb354">
+</p>
+
+Furthermore, we
+can use the KCoreComponent functionality and highlight the important subgraphs in a complex graph system. These
+watershed-delineations are way more accurate compared to the first one. Another way to do this is to label the boundary
+between two adjacent sub-basins by the indexes of corresponding sub-basins and then gauge at how the vertices are
+connected together and what are the corresponding clusters made out of connected vertices. This would mean that
+clusters represent larger basins that form a unique hydro-graphical ecosystem with a unique water graph.
+<p align = "center">
+ <img width="340" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/f514cdc2-fc38-4a7a-a189-07fe092413a6">
+<img width="333" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/7960ea0d-2f3b-4cfd-90a4-4bb1ef0729f8">
+
+</p>
