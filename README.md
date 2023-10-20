@@ -1732,5 +1732,5 @@ clusters represent larger basins that form a unique hydro-graphical ecosystem wi
 
 ## Weighted Cellular Automata Model 
 
-!image[](https://github-production-user-asset-6210df.s3.amazonaws.com/25653940/276912471-9e74f774-8750-4bbf-867e-0ecdba154eca.png)
+!image[(https://github-production-user-asset-6210df.s3.amazonaws.com/25653940/276912471-9e74f774-8750-4bbf-867e-0ecdba154eca.png)]
 
