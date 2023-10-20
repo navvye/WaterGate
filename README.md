@@ -1846,7 +1846,7 @@ Manipulate[
 
 <p align = "center">
 
- <img width="472" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ae0c86cf-ec69-4f99-8ecf-663922b1c78f">
+ <img alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/ae0c86cf-ec69-4f99-8ecf-663922b1c78f">
 </p>
 
 But, water flow has many other factors than just elevation and wouldn't just go where the lowest elevation. While the bathtub model captures the the general idea of where water will travel, our cellular automata model will consider more factors of how water flows and more accurately predict  water spread. 
@@ -1854,9 +1854,4 @@ But, water flow has many other factors than just elevation and wouldn't just go 
 ### Cellular Automata Approach
 
 We used a Cellular Automata(CA) approach to simulate flooding across a region due to heavy rainfall (pluvial flooding) in 2D. Cellular automata are discrete models that simulate the behavior of individual cells based on predefined rules. The model divides the area of land into a discrete space of square grid cells. We will take the Von Neumann neighborhood for each cell, meaning a central cell has 4 neighbor cells adjacent to it. Water flows from the central cell to neighboring cells depending on the water flow rules that the model will set.
-
-<p align = "center">
-<img width="186" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/abcd78cf-ced1-4c8b-818f-901b87cd6501"> 
- <img width="352" height = "360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/1cdb4235-3e63-460c-ba1d-48c13fd24791">
-</p>
 
