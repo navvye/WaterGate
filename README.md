@@ -1961,6 +1961,5 @@ ListAnimate[
     smrule1[#] & /@ Range[49];}, {x, 1, 10}], SaveDefinitions -> True]
 ```
 <figure class="video_container">
-  <iframe src="
-https://drive.google.com/file/d/1molPzDdNWS6KT89OSSa9JBdJdQ95955t/preview" frameborder="0" allowfullscreen="true"> </iframe>
+  <iframe src="https://drive.google.com/file/d/1molPzDdNWS6KT89OSSa9JBdJdQ95955t/preview" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
