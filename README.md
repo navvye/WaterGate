@@ -1962,3 +1962,273 @@ ListAnimate[
 ```
 <p align = "center"> <img width="430" alt="Screenshot 2023-10-20 at 5 52 26 PM" src="https://github.com/navvye/WaterGate/assets/25653940/22c3fdb8-f18e-4a8c-b83f-c2db00152d3f"> 
 </p>
+
+### Weighted Cellular Automata Model
+
+Now, we will use a more complex cellular automata model to display the water flow. This model, called WCA2D, Weighted Cellular Automata 2D, uses a weight computing system and physical limitations to model water flow without too complex mathematical equations and fluid dynamics concepts (Guidolin et al., 2016).In the model, the ratios of water are transferred from the central cell to the downstream neighbor cells using a weight-based system. The water transferred will be limited by Manning's formula and the critical flow equation, to produce a more accurate prediction of resulting water levels. 
+#### Data
+```Mathematica
+elevationdata = 
+  GeoElevationData[
+   Entity["City", {"AtlanticCity", "NewJersey", "UnitedStates"}], 
+   GeoRange -> Quantity[100, "Meters"], GeoProjection -> Automatic];
+elevationdata = Flatten[QuantityMagnitude[Normal@elevationdata]]
+elevationdata = elevationdata - Min[elevationdata];
+```
+Each coordinate point, with a corresponding elevation, constitutes a cell:
+
+```Mathematica
+graph = GridGraph[{7, 7}];
+```
+
+The area of a cell is defined by the area of region/number of cells. The edge is the sqrt of the area. 
+A small tolerance to set to help reduce oscillation. Downstream cells whose water levels are within tolerance of the center cell will be ignored, and won't receive water.
+
+```Mathematica
+area=100/Length[elevationdata];
+edgelength=Sqrt[area];
+tolerance = 0.1;
+```
+
+Now, we set the initial waterdepth to 5 at every cell(e.g. 5 in of rainfall)
+
+```Mathematica
+waterdepth = Table[5, 49];
+```
+
+#### Steps
+
+To distribute the volume being transferred from the central cell to the neighborhood,  we use a weighting system. 
+1) Identify downstream cells
+2) Compute weights based on available storage volume
+3) Compute total volume leaving central cell
+4) For each downstream cell, calculate the new intercellular-volume
+
+We use the following helper functions to accomplish this:
+##### Identifying Downstream Cells
+
+Finds the difference in water level(elevation+waterdepth) between center and ith neighbor:
+```Mathematica
+waterleveldiff[center_, 
+  i_] := (elevationdata[[center]] + 
+    waterdepth[[center]]) - (elevationdata[[i]] + waterdepth[[i]])
+```
+Available storage volume is the possible volume a neighbor cell can store from the center cell. Note that this value will be 0 for upstream cells since neighbor cells never give water. It is the water level difference, which is in m, multiplied by area (m^2).
+
+Note that if there are no eligible cells to receive water(either upstream or doesn't satisfy tolerance), this value is set to 0.
+
+The following code 
+Finds available storage volume of the ith neighbor cell of center and determines whether a center cells has downstream cells.
+
+```Mathematica
+
+availstoragevol[center_,i_]:=Max[waterleveldiff[center,i],0]*area
+upstream[center_]:=If[Select[neighbors[center],waterleveldiff[center,#]>tolerance&]=={},True,False]
+```
+
+
+#### Weight Computing
+
+We define the following Helper Functions
+
+Minstorage volume Finds the minimum available storage volume between all the neighbor cells of a center cell:
+MaxStorage volume Finds the maximum available storage volume(used later but not in weights):
+Mcell Finds the index of the cell with maximum available storage volume:
+TotStorageVolume Finds the total volume that all the neighbor cells can receive from the center cell:
+
+```Mathematica
+minstoragevol[center_]:=area*With[{list=Select[waterleveldiff[center,#]
+	&/@neighbors[center],#>tolerance&]},
+	If[list=={},0,Min[list]]]
+
+maxstoragevol[center_]:=area*With[{list=Select[waterleveldiff[center,#]
+	&/@neighbors[center],#>tolerance&]},
+	If[list=={},0,Max[list]]]
+
+Mcell[center_]:=neighbors[center][[Position[availstoragevol[center,#]&/@neighbors[center],maxstoragevol[center]][[1,1]]]]
+totstoragevol[center_]:=Total[availstoragevol[center,#]&/@neighbors[center]]
+```
+We use these functions to compute weights for the neighborhood, using the following equation:
+
+The weight of a downstream cell is the ratio between its available storage volume and the total available storage volume, representing a fraction of the volume that the center cell will give away. To reduce oscillations, we allow the center cell to retain a fraction of the volume transferred, giving it the same weight as the minimum storage volume. The weights should always add to 1.
+```Mathematica
+weight[center_,i_]:=availstoragevol[center,i]/(totstoragevol[center]+minstoragevol[center])
+weight[center_] := minstoragevol[center]/(minstoragevol[center]+totstoragevol[center])
+```
+#### Total Intercellular-Volume
+
+The total intercellular-volume is the volume of water that leaves the center cell. Note that it is different from the total available storage volume previous calculated. 
+
+This value is calculated by taking the minimum of three values. 
+
+In the first term, the total intercellular-volume is limited by the amount of water that exists in the center cell.
+
+In the second term, we use Manning's formula and the critical flow equation that imposes a physically based equation. This dictates the maximum permissible velocity of water.
+
+In the third term, the total intercellular-volume is limited by the minimum available storage volume  + the total intercellular-volume that left the cell in the previous time step to reduce oscillations.
+
+##### Helper Functions
+**Second Term:**
+
+Finds the limiting velocity using the critical flow equation:
+```Mathematica
+vcrt[center_] :=If[waterdepth[[center]]<=0,Sqrt[waterdepth[[center]]*9.8],Sqrt[waterdepth[[center]]*9.8]]
+```
+
+Finds the limiting velocity using Manning's formula. 
+```Mathematica
+vman[center_]:=Power[waterdepth[[center]],(2/3)]*Sqrt[waterleveldiff[center,Mcell[center]]/edgelength]
+```
+Finds limiting volume based on the minimum of the two limiting velocities:
+
+```Mathematica
+maxicvol[center_]:=Min[vcrt[center],vman[center]]*waterdepth[[center]]*edgelength
+```
+
+**Third Term**
+
+To find the total intercellular-volume(Itot) from the previous iteration, we store the values in a new list called Itots. 
+
+```Mathematica
+Itots = Table[Table[0, 1], 49];
+```
+Adds the iteration to the list of Itots:
+
+```Mathematica
+append[center_, 
+  time_] := {If[upstream[center] == False, 
+   Itots[[center]] = Append[Itots[[center]], Itot[center, time]], 
+   Itots[[center]] = Append[Itots[[center]], 0]]}
+```
+We can now compute the total intercellular-volume using the following function:
+
+```Mathematica
+Itot[center_,time_]:=Min[waterdepth[[center]]*area,
+	maxicvol[center]/weight[center,Mcell[center]],
+	If[time==1,Infinity, minstoragevol[center]+Itots[[center]][[time]]]]
+```
+
+#### Depth Updating
+Now, we can use our weights and total intercellular-volume to update the water depths of each cell. Each neighbor cell receives their respective weight times the total volume that leaves the center cell (Itot).
+
+```Mathematica
+
+Now, we can use our weights and total intercellular-volume to update the water depths of each cell. Each neighbor cell receives their respective weight times the total volume that leaves the center cell (Itot).
+
+Icell[center_,i_,time_]:=weight[center,i]*Itot[center,time]
+
+Icell[center_,time_]:= Itot[center,time]*weight[center]
+
+Since water flows simultaneously, we must update all the cells at once. One iteration constitutes every cell in the grid being the center cell once. Those calculations are all based on the starting waterdepths, and the changes are stored in a temporary variable. 
+
+We store the changes in a variable called changes.
+
+changes=Table[0,49];
+
+First, we define a function calculate that performs a calculation on all the cells in the grid.
+
+calculate[center_,time_,changes_]:=If[
+	upstream[center]==False,
+	ReplacePart[changes,Join[{center->changes[[center]]- (Itot[center, time]/area)+(Icell[center,time]/area)},Table[
+		x->changes[[x]]+(Icell[center, x, time]/area),
+		{x, Select[neighbors[center], availstoragevol[center, #] > tolerance&]}
+	]]],changes];
+
+Then, we update all of the water depths at once. 
+
+wmupdate[time_] := {
+	Table[
+		
+		changes = calculate[x, time,changes];append[x,time];,{x, Length[elevationdata]}
+	],
+	
+	waterdepth=waterdepth+changes;
+	changes=Table[0,Length[elevationdata]];
+}
+```
+#### Data Visualization
+
+We will be using BarChart3D to visualize the model again. We will also use ArrayPlot to show how the water fluctuates as time passes.
+
+```Mathematica
+reset[dim_,wtrlvl_]:={Itots = Table[Table[0,1],dim^2];
+changes=Table[0,dim^2];
+waterdepth=Table[wtrlvl,dim^2];}
+reset[7, 5];
+```
+
+##### Atlantic City
+
+```Mathematica
+ListAnimate[
+ First /@ 
+  Table[{Show[
+     BarChart3D[Partition[elevationdata, 7], style, 
+      ColorFunction -> "SiennaTones", 
+      ChartElementFunction -> 
+       Function[{xyz, z}, {Cuboid @@ Transpose@xyz}]], 
+     BarChart3D[Partition[waterdepth + elevationdata, 7], style, 
+      ColorFunction -> "DeepSeaColors", 
+      ChartElementFunction -> 
+       Function[{xyz, z}, {Opacity[.5], 
+         Cuboid @@ Transpose@(0.0015223 + 0.999123 xyz)}]], 
+     ImageSize -> Large], wmupdate[x]}, {x, 10}], 
+ SaveDefinitions -> True]
+```
+
+<p align = 'center' >
+<img width="428" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/7c66405b-9ffb-41c8-b289-bde825cc6cc3">
+
+</p>
+
+###### Princeton
+We will apply this model on a portion of Princeton, New Jersey. To change dimensions, we re-define graph, area, and use the function reset.
+
+```Mathematica
+elevationdata=GeoElevationData[Entity["City",{"Princeton","NewJersey","UnitedStates"}],GeoRange->Quantity[500,"Meters"],GeoProjection->Automatic];
+elevationdata=Flatten[QuantityMagnitude[Normal@elevationdata]];
+
+elevationdata=elevationdata-Min[elevationdata];
+
+graph=GridGraph[{36,36}];
+area=500/Length[elevationdata];
+
+```
+
+Resets all the variables to initial values:
+
+```Mathematica
+
+reset[dim_,wtrlvl_]:={Itots = Table[Table[0,1],dim^2];
+changes=Table[0,dim^2];
+waterdepth=Table[wtrlvl,dim^2];}
+reset[36,5];
+```
+Now, we visualize using ListAnimate
+```Mathematica
+ListAnimate[
+ First /@ 
+  Table[{ArrayPlot[Partition[waterdepth, 36], 
+     ColorFunction -> 
+      Function[{x}, ColorData["DeepSeaColors"][1 - x]]], 
+    update[x, waterdepth]}, {x, 1, 10}]]
+```
+
+<p align = "center"> <img width="579" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/0acadc78-be7f-4f38-9fd7-ba6ecb854638"> </p>
+
+Finally, we can type the reversed ArrayPlot of the GeoElevationData
+
+```Mathematica
+ArrayPlot[Partition[elevationdata, 36], 
+ ColorFunction -> Function[{x}, ColorData["DeepSeaColors"][x]]]
+```
+
+<p align = "center"> 
+<img width="360" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/75b4a389-604c-4baf-97f9-2b3fe9f24084">
+</p>
+
+Looking at the ArrayPlot of the water depths and the reversed ArrayPlot elevation data, we can see they look pretty similar. This means that the lower the elevation, there is generally more water. This result is similar to the Bathtub model, except there are a few differences that distinguish the two. On larger datasets, this information can be helpful for disaster mitigation.
+
+### Conclusion
+With an increasing need for accurate models to mitigate impacts of flooding in urban areas and coastal regions, this project explores different approaches for water flow modeling: the bathtub inundation model and the cellular automata model. One challenges I encountered was considering the order of updating the cells and updating the grid simultaneously. Weighted cellular automata model provides a very gradient smooth distribution of water levels. Most of the water (~80%) is transferred within the first time step, and the other water fluctuates for the next few iterations. For smaller grids, the water is pretty constant by the 10th iteration. In this project, I learned about cellular automata and hopefully this model can be used in applications to predicting water spread and preventing large-scale floods.
+
