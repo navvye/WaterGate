@@ -1851,7 +1851,116 @@ Manipulate[
 
 But, water flow has many other factors than just elevation and wouldn't just go where the lowest elevation. While the bathtub model captures the the general idea of where water will travel, our cellular automata model will consider more factors of how water flows and more accurately predict  water spread. 
 
-### Cellular Automata Approach
+### Cellular Automata Overview
 
 We used a Cellular Automata(CA) approach to simulate flooding across a region due to heavy rainfall (pluvial flooding) in 2D. Cellular automata are discrete models that simulate the behavior of individual cells based on predefined rules. The model divides the area of land into a discrete space of square grid cells. We will take the Von Neumann neighborhood for each cell, meaning a central cell has 4 neighbor cells adjacent to it. Water flows from the central cell to neighboring cells depending on the water flow rules that the model will set.
 
+<p align = "center">
+<img width="186" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/44f2068f-42eb-4379-b9e1-40b192db9b61">
+</p>
+
+And also 
+
+<p align = "center"> 
+<img width="352" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/a88a028f-1d74-4303-81b9-15f7e58e660c">
+</p>
+Each point in this graph represents one cell of water, whose volume will depend on the size of our dataset. 
+
+```Mathematica
+graph=GridGraph[{7,7}]
+```
+<p align ="center">
+<img width="192" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/2f032b64-fd69-4124-95e5-bda2a7ebd6e8">
+</p>
+
+For example, consider vertex 9.  NeighborhoodGraph will show the 4 neighbors of vertex 9. Here, vertex 9 is colored red.
+
+```Mathematica
+NeighborhoodGraph[GridGraph[{7,7},VertexStyle->{9->Red}],9]
+```
+<p align = "center">
+<img width="197" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/98bb3952-d381-4b05-966f-801d2d0fb872">
+</p>
+
+### Simple Cellular Automata Model
+
+#### Rule
+The guiding transition rule of this model is for a central cell to give its neighboring cells 1 unit of water depth if it has a higher water level than its neighbor. Then, I apply this rule to every cell in the grid, iterating until the water depths are relatively constant.
+
+Note that center cells will only give away water, and neighbor cells will only receive water. 
+
+So, upstream cells (higher water level than center) aren't changed, and downstream cells will get water. 
+
+#### Data 
+
+```Mathematica
+smelevdata = 
+  GeoElevationData[
+   Entity["City", {"AtlanticCity", "NewJersey", "UnitedStates"}], 
+   GeoRange -> Quantity[100, "Meters"], GeoProjection -> Automatic];
+smelevdata = Flatten[QuantityMagnitude[Normal@smelevdata]];
+```
+
+We will have two versions of this model: one that updates each cell one by one, which is not as accurate since water doesn't flow from one cell, rather all at once since it is coming from above, and one that updates the cells simultaneously. The first model helps us visualize what is actually going on at every step.
+
+#### Step By Step Model
+
+###### Helper Functions:
+
+We define two helper functions for the rule: add, which adds one to the value at waterdepths, and subtract, which subtracts one. 
+```Mathematica
+add1[i_] := ReplacePart[waterdepths, i -> waterdepths[[i]] + 1];
+subtract1[i_] := ReplacePart[waterdepths, i -> waterdepths[[i]] - 1];
+```
+###### Rule Function
+Here is the rule for the first simple model we will make. 
+
+The rule goes through each neighbor cell of the center cell, which is passed as a parameter. Each neighbor cell is updated based on a water level comparison to the center cell. Note the center cell will not give water if it is less than 1, otherwise its water depth will be negative, which is not possible.
+
+```Mathematica
+
+smrule1[center_] := Table[
+  If[
+   smelevdata[[center]] + waterdepths[[center]] > 
+    smelevdata[[x]] + waterdepths[[x]], 
+   If[waterdepths[[center]] >= 1,
+    waterdepths = add1[x]; waterdepths = subtract1[center];]
+   ],
+  {x, neighbors[center]}
+  ]
+```
+
+##### Visualization
+We will plot the new waterdepths and elevation using BarChart3D. We stack the waterdepth over the elevation, to see what water will look like on the land we took. waterdepths is set to 5 at cell, representative of the amount of uniform rainfall. And of course, before running the model, we reset the values of waterdepths. 
+
+
+```Mathematica
+waterdepths = Table[5, 49];
+
+style = {ChartLayout -> "Grid", Method -> {"Canvas" -> False}, 
+   BarSpacing -> {.1, .1}};
+```
+
+To do this, we use ListAnimate and iterate through every step . One iteration is when every cell becomes the center cell once; it goes from 1 to 49, updating the waterdepths values each time . This allows us to see what it going on at each step .
+
+```Mathematica
+
+ListAnimate[
+ First /@ 
+  Table[{Show[
+     BarChart3D[Partition[smelevdata, 7], style, 
+      ColorFunction -> "SiennaTones", 
+      ChartElementFunction -> 
+       Function[{xyz, z}, {Cuboid @@ Transpose@xyz}]], 
+     BarChart3D[Partition[waterdepths + smelevdata, 7], style, 
+      ColorFunction -> "DeepSeaColors", 
+      ChartElementFunction -> 
+       Function[{xyz, z}, {Opacity[.5], 
+         Cuboid @@ Transpose@(0.0015223 + 0.999123 xyz)}]], 
+     ImageSize -> Large],
+    smrule1[#] & /@ Range[49];}, {x, 1, 10}], SaveDefinitions -> True]
+```
+<figure class="video_container">
+  <iframe src="
+https://drive.google.com/file/d/1molPzDdNWS6KT89OSSa9JBdJdQ95955t/preview" frameborder="0" allowfullscreen="true"> </iframe>
+</figure>
