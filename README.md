@@ -2283,7 +2283,7 @@ Looking at the ArrayPlot of the water depths and the reversed ArrayPlot elevatio
 
 ---
 
-#### 1\. HexagonalGraphGen
+#### 1. HexagonalGraphGen
 
 ```wolfram
 HexagonalGraphGen[n_, m_]
@@ -2302,7 +2302,7 @@ A `Graph` object representing the hexagonal graph.
 
 ---
 
-#### 2\. InitializeCellularAutomata
+#### 2. InitializeCellularAutomata
 
 ```wolfram
 InitializeCellularAutomata[geoPosition_, geoRange_, nodeDensity_, waterLevelFunction_]
@@ -2323,7 +2323,7 @@ A `Graph` object representing the initialized hexagonal graph with water and ele
 
 ---
 
-#### 3\. InitVertexData
+#### 3. InitVertexData
 
 ```wolfram
 InitVertexData[graph_, groundHeightFunction_, waterLevelFunction_]
@@ -2365,7 +2365,7 @@ A visualization of the graph with vertices sized according to the water level an
 
 ---
 
-#### 5\. VisualizeWaterData3D
+#### 5. VisualizeWaterData3D
 
 ```wolfram
 VisualizeWaterData3D[graph_, vertexData_]
@@ -2387,7 +2387,7 @@ A 3D visualization of the graph showing ground heights and water levels.
 
 ---
 
-#### 6\. GenerateWaterData
+#### 6. GenerateWaterData
 
 ```wolfram
 GenerateWaterData[graph_, iterations_, flowRate_]
