@@ -4,7 +4,6 @@ Welcome to the WaterGate documentation! WaterGate is an accessible computational
 
 # Table of Contents 
 
-- [Introduction](#introduction)
 - [Abstract](#abstract)
 - [Documentation](#documentation)
   * [Isolating Rivers from Maps](#isolating-rivers-from-maps)
@@ -16,9 +15,9 @@ Welcome to the WaterGate documentation! WaterGate is an accessible computational
   * [2-D Satellite Mapping onto 3-D Model](#2-d-satellite-mapping-onto-3-d-model)
   * [Relief Plot for Flood Plain](#relief-plot-for-flood-plain)
   * [Rational Method (Q = CiA) Introduction and Usage](#rational-method--q---cia--introduction-and-usage)
-    + [C Calculation](#c-calculation)
-    + [I Calculation](#i-calculation)
-    + [A Calculation](#a-calculation)
+  * [C Calculation](#c-calculation)
+  * [I Calculation](#i-calculation)
+  * [A Calculation](#a-calculation)
   * [CiA (Q Calculation) & River Runoff Calculation](#cia--q-calculation----river-runoff-calculation)
   * [Relief Calculation Integration and Flood Analysis](#relief-calculation-integration-and-flood-analysis)
   * [Application to Simple River Systems](#application-to-simple-river-systems-1)
@@ -46,7 +45,7 @@ Welcome to the WaterGate documentation! WaterGate is an accessible computational
     + [Calculating Change in Water Levels](#calculating-change-in-water-levels)
   * [Watershed Delineation](#watershed-delineation)
   * [Using cellular automata](#using-cellular-automata)
-    + [Introduction](#introduction-1)
+    + [Introduction](#introduction)
       - [Locations](#locations)
     + [Elevation Bathtub Model](#elevation-bathtub-model)
       - [Atlantic City](#atlantic-city)
@@ -70,8 +69,15 @@ Welcome to the WaterGate documentation! WaterGate is an accessible computational
       - [Data Visualization](#data-visualization)
         * [Atlantic City](#atlantic-city-1)
         * [Princeton](#princeton)
+    + [HexagonalCellularAutomata Documentation:](#hexagonalcellularautomata-documentation-)
+      - [1\. HexagonalGraphGen](#1--hexagonalgraphgen)
+      - [2\. InitializeCellularAutomata](#2--initializecellularautomata)
+      - [3\. InitVertexData](#3--initvertexdata)
+      - [4\. VisualizeWaterData](#4--visualizewaterdata)
+      - [5\. VisualizeWaterData3D](#5--visualizewaterdata3d)
+      - [6\. GenerateWaterData](#6--generatewaterdata)
+      - [Internal (Private) Functions:](#internal--private--functions-)
     + [Conclusion](#conclusion)
-
 # Abstract
 240 million people are affected by floods each year, reflecting the urgent need for accessible flood prediction and detection. WaterGate is a computational model that uses geographic elevation data and the rational method to predict flooding patterns , generating an interactive 3D model for user accessibility. Computational hydrology applies numerical methods, machine learning algorithms, and computational simulations to understand, predict, and manage water resources - including floods. Our project employs computational hydrology by analyzing the structure of river tributaries in 2D through polygon clustering, satellite imaging, and various cleaning protocols. We developed respective tributary tree graphs, morphological graphs, and nodes to create a comprehensive tree and 3D model. Afterward, we examine the morphology of flood plains in 3D space, implementing the rational method (Q = C iA) framework with curated relief plots to predict, model, and visualize flooding elevation. Then, we constructed our stream order analysis, waterline delineation, and statistical analysis to validate our data. Lastly, we modeled different river systems and developed further extensions to increase the applicability of WaterGate to communities around the world.
 
