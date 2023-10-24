@@ -1,6 +1,26 @@
 # Introduction
 
 Welcome to the WaterGate documentation! WaterGate is an accessible computational analysis of flooding patterns written in the Wolfram Language. 
+The functions range from using ReliefPlots and Morphological Branch Points to Hexagonal and Rectangular cellular automata. Watergate was inspired by the recent floods in North India, particularly in the **Himalayas**, and in my hometown of **Delhi**.
+
+The project is currently being implemented by the **Indian Space and Research Organisation**, and I'm also working with **Dr**. **Mohammad Ali Ghorbani** from the **University of Tabriz**, a top university for Water-Engineering, to predict the morphological changes lakes present in arid regions using Convolutional Neural Networks, Time Series and Pixel-Manipulation. 
+
+Here's a brief snapshot of WaterGate. 
+
+<p align = "center">
+<img src = "https://i.ibb.co/KN4PkwZ/Water-Gate-1.png" width = "400" height = "360">
+<img src = "https://i.ibb.co/sQ7sQFJ/Water-Gate-2.png" width = "400" height = "360">
+</p>
+<br >
+<br>
+
+<p align = "center">
+<img src = "https://i.ibb.co/0KW8DcP/Water-Gate-3.png" width = "400" height = "360">
+<img src = "https://i.ibb.co/nzKnxkf/Water-Gate-4.png" width = "400" height = "360">
+</p>
+
+# Abstract
+240 million people are affected by floods each year, reflecting the urgent need for accessible flood prediction and detection. WaterGate is a computational model that uses geographic elevation data and the rational method to predict flooding patterns , generating an interactive 3D model for user accessibility. Computational hydrology applies numerical methods, machine learning algorithms, and computational simulations to understand, predict, and manage water resources - including floods. Our project employs computational hydrology by analyzing the structure of river tributaries in 2D through polygon clustering, satellite imaging, and various cleaning protocols. We developed respective tributary tree graphs, morphological graphs, and nodes to create a comprehensive tree and 3D model. Afterward, we examine the morphology of flood plains in 3D space, implementing the rational method (Q = C iA) framework with curated relief plots to predict, model, and visualize flooding elevation. Then, we constructed our stream order analysis, waterline delineation, and statistical analysis to validate our data. Lastly, we modeled different river systems and developed further extensions to increase the applicability of WaterGate to communities around the world.
 
 # Table of Contents 
 - [Abstract](#abstract)
@@ -78,8 +98,7 @@ Welcome to the WaterGate documentation! WaterGate is an accessible computational
       - [Internal-Functions](#internal-functions)
     + [Conclusion](#conclusion)
     
-# Abstract
-240 million people are affected by floods each year, reflecting the urgent need for accessible flood prediction and detection. WaterGate is a computational model that uses geographic elevation data and the rational method to predict flooding patterns , generating an interactive 3D model for user accessibility. Computational hydrology applies numerical methods, machine learning algorithms, and computational simulations to understand, predict, and manage water resources - including floods. Our project employs computational hydrology by analyzing the structure of river tributaries in 2D through polygon clustering, satellite imaging, and various cleaning protocols. We developed respective tributary tree graphs, morphological graphs, and nodes to create a comprehensive tree and 3D model. Afterward, we examine the morphology of flood plains in 3D space, implementing the rational method (Q = C iA) framework with curated relief plots to predict, model, and visualize flooding elevation. Then, we constructed our stream order analysis, waterline delineation, and statistical analysis to validate our data. Lastly, we modeled different river systems and developed further extensions to increase the applicability of WaterGate to communities around the world.
+
 
 # Documentation 
 This will not be a traditional documentation - rather, it will focus on the code that we've written and how you can implement it if you code in the Wolfram Language
