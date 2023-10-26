@@ -11,7 +11,7 @@ Here's a brief snapshot of WaterGate.
 <img src = "https://i.ibb.co/KN4PkwZ/Water-Gate-1.png" width = "300" height = "480">
 <img src = "https://i.ibb.co/sQ7sQFJ/Water-Gate-2.png" width = "300" height = "480">
 </p>
-<p>
+<p align = "center">
 <img src = "https://i.ibb.co/0KW8DcP/Water-Gate-3.png" width = "300" height = "480">
 <img src = "https://i.ibb.co/nzKnxkf/Water-Gate-4.png" width = "300" height = "480">
 </p>
