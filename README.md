@@ -877,7 +877,8 @@ parisLevelPlot =
 </p>
 
 Now, we map the dimensions of Paris and print a Flood Plot
-``Mathematica 
+
+```Mathematica 
 
 parisCityDimensions = 
  Dimensions[
@@ -892,7 +893,9 @@ parisFloodPlot =
    PlotRange -> All, PlotStyle -> Texture[parisLevelPlot], 
    Filling -> Bottom, FillingStyle -> Opacity[1], ImageSize -> 1250, 
    Boxed -> False]]
-    ```
+
+```
+
 
  <p align = "center" >
   <img width="481" alt="image" src="https://github.com/navvye/WaterGate/assets/25653940/2878790f-7b80-4369-8d25-d383bdf10a94">
