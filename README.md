@@ -5,7 +5,8 @@ The functions range from using ReliefPlots and Morphological Branch Points to He
 
 The project is currently being implemented by the **Indian Space and Research Organisation**, and I'm also working with **Dr**. **Mohammad Ali Ghorbani** from the **University of Tabriz**, a top university for Water-Engineering, to predict the morphological changes lakes present in arid regions using Convolutional Neural Networks, Time Series and Pixel-Manipulation. 
 
-Here's a brief snapshot of WaterGate. 
+# Collaborators 
+Navvye Anand, George Cheng, Tyler Rose, Sophia Zhou
 
 <p align = "center">
 <img src = "https://i.ibb.co/KN4PkwZ/Water-Gate-1.png" width = "300" height = "480">
